@@ -22,13 +22,7 @@ func rowsAndCols(cells int) (int, int) {
 	return cells / maxCols, maxCols
 }
 
-func (t *tipam) pushNetwork(CIDR string) {
-	t.stack = append(t.stack, CIDR)
-	t.network(CIDR)
-}
-
-// network renders the provided cidr on the screen
-func (t *tipam) network(CIDR string) {
+func newNetworkView(t *tipam, CIDR string) tview.Primitive {
 	t.pages.SetBorder(false)
 	_, ipNet, _ := net.ParseCIDR(CIDR) // TODO unignore err
 	netMaskOnes, netMaskBits := ipNet.Mask.Size()
@@ -68,13 +62,13 @@ func (t *tipam) network(CIDR string) {
 			if t.networkDepth > IPv4MaxBits-1 {
 				t.networkDepth = IPv4MaxBits - 1
 			}
-			t.pushNetwork(CIDR)
+			t.network(CIDR)
 		case '-':
 			t.networkDepth -= 1
 			if t.networkDepth < 1 {
 				t.networkDepth = 1
 			}
-			t.pushNetwork(CIDR)
+			t.network(CIDR)
 		default:
 		}
 
@@ -82,18 +76,19 @@ func (t *tipam) network(CIDR string) {
 	})
 	table.SetSelectedFunc(func(row, col int) {
 		subnet := subnets[col*rows+row]
-		t.pushNetwork(subnet.String())
+		t.network(subnet.String())
 	})
-	table.SetDoneFunc(func(key tcell.Key) {
-		pop := t.stack[len(t.stack)-2]
-		if key == tcell.KeyESC {
-			t.stack = t.stack[0 : len(t.stack)-1]
-		}
-		t.network(pop)
-	})
+
+	// TODO: implement goback
 
 	table.SetBorder(true)
 	table.SetTitle(ipNet.String())
+	return table
+}
 
-	t.pages.AddAndSwitchToPage(ipNet.String(), table, true)
+// network renders the provided cidr on the screen
+func (t *tipam) network(CIDR string) {
+	networkView := newNetworkView(t, CIDR)
+
+	t.pushView(CIDR, networkView)
 }

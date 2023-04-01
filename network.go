@@ -96,7 +96,7 @@ func (t *tipam) newNetworkView(CIDR string) tview.Primitive {
 	return table
 }
 
-// network renders the provided cidr on the screen
+// network creates a new network view for the provided CIDR and pushes it onto the view stack
 func (t *tipam) network(CIDR string) {
 	networkView := t.newNetworkView(CIDR)
 

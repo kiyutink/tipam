@@ -22,22 +22,26 @@ func rowsAndCols(cells int) (int, int) {
 	return cells / maxCols, maxCols
 }
 
-func newNetworkView(t *tipam, CIDR string) tview.Primitive {
-	t.pages.SetBorder(false)
-	_, ipNet, _ := net.ParseCIDR(CIDR) // TODO unignore err
+func (t *tipam) newNetworkView(CIDR string) tview.Primitive {
+	_, ipNet, _ := net.ParseCIDR(CIDR) // TODO: unignore err
 	netMaskOnes, netMaskBits := ipNet.Mask.Size()
 
-	if netMaskOnes+t.networkDepth > IPv4MaxBits {
-		t.networkDepth = IPv4MaxBits - netMaskOnes
+	// nDepth is a temporary value that only affects the current "render".
+	// We use it to override it below in case the network is too small.
+	// This way when we pop the view off the stack, it won't affect the larger networks' views.
+	nDepth := t.networkDepth
+
+	if netMaskOnes+nDepth > IPv4MaxBits {
+		nDepth = IPv4MaxBits - netMaskOnes
 	}
 
-	subnetCount := 1 << t.networkDepth
+	subnetCount := 1 << nDepth
 	rows, cols := rowsAndCols(subnetCount)
 
 	table := tview.NewTable()
 	subnets := []*net.IPNet{}
 
-	subnetMaskOnes := netMaskOnes + t.networkDepth
+	subnetMaskOnes := netMaskOnes + nDepth
 	subnet := &net.IPNet{IP: ipNet.IP, Mask: net.CIDRMask(subnetMaskOnes, netMaskBits)}
 
 	for ipNet.Contains(subnet.IP) {
@@ -57,29 +61,35 @@ func newNetworkView(t *tipam, CIDR string) tview.Primitive {
 	table.SetSelectable(true, true)
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
+
 		case '+':
-			t.networkDepth += 1
-			if t.networkDepth > IPv4MaxBits-1 {
-				t.networkDepth = IPv4MaxBits - 1
-			}
-			t.network(CIDR)
+			t.networkDepth = clamp(t.networkDepth+1, 1, 10)
+			networkView := t.newNetworkView(CIDR)
+			t.replaceTopView(ipNet.String(), networkView)
+
 		case '-':
-			t.networkDepth -= 1
-			if t.networkDepth < 1 {
-				t.networkDepth = 1
-			}
-			t.network(CIDR)
+			t.networkDepth = clamp(t.networkDepth-1, 1, 10)
+			networkView := t.newNetworkView(CIDR)
+			t.replaceTopView(ipNet.String(), networkView)
+
 		default:
+			// nothing
 		}
 
 		return event
 	})
 	table.SetSelectedFunc(func(row, col int) {
 		subnet := subnets[col*rows+row]
-		t.network(subnet.String())
+		if ones, _ := subnet.Mask.Size(); ones < 32 {
+			t.network(subnet.String())
+		}
 	})
 
-	// TODO: implement goback
+	table.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyESC {
+			t.popView()
+		}
+	})
 
 	table.SetBorder(true)
 	table.SetTitle(ipNet.String())
@@ -88,7 +98,7 @@ func newNetworkView(t *tipam, CIDR string) tview.Primitive {
 
 // network renders the provided cidr on the screen
 func (t *tipam) network(CIDR string) {
-	networkView := newNetworkView(t, CIDR)
+	networkView := t.newNetworkView(CIDR)
 
 	t.pushView(CIDR, networkView)
 }

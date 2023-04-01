@@ -4,7 +4,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func newHomeView(t *tipam) tview.Primitive {
+func (t *tipam) newHomeView() tview.Primitive {
 	cell := tview.NewTableCell("10.0.0.0/8")
 	cell.SetExpansion(1)
 
@@ -20,6 +20,6 @@ func newHomeView(t *tipam) tview.Primitive {
 }
 
 func (t *tipam) home() {
-	homeView := newHomeView(t)
+	homeView := t.newHomeView()
 	t.pushView("home", homeView)
 }

@@ -14,7 +14,13 @@ func (t *tipam) pushView(title string, p tview.Primitive) {
 	t.viewStack.push(title)
 }
 
-func (t *tipam) replaceTop(title string, p tview.Primitive) {
+func (t *tipam) replaceTopView(title string, p tview.Primitive) {
 	t.pages.AddAndSwitchToPage(title, p, true)
 	t.viewStack.replaceTop(title)
+}
+
+func (t *tipam) popView() {
+	t.viewStack.pop()
+	top := t.viewStack.top()
+	t.pages.SwitchToPage(top)
 }

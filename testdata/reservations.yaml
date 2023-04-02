@@ -1,0 +1,10 @@
+- cidr: 10.0.0.0/12
+  tags:
+    - production
+    - us-east-1
+    - kube
+- cidr: 20.0.0.0/12
+  tags:
+    - production
+    - us-east-1
+    - kube

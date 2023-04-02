@@ -1,8 +1,8 @@
-package main
+package helper
 
 import "golang.org/x/exp/constraints"
 
-func clamp[T constraints.Ordered](val T, min T, max T) T {
+func Clamp[T constraints.Ordered](val T, min T, max T) T {
 	if val < min {
 		return min
 	}

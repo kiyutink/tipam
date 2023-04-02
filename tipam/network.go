@@ -1,10 +1,11 @@
-package main
+package tipam
 
 import (
 	"net"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gdamore/tcell/v2"
+	"github.com/kiyutink/tipam/helper"
 	"github.com/rivo/tview"
 )
 
@@ -22,14 +23,14 @@ func rowsAndCols(cells int) (int, int) {
 	return cells / maxCols, maxCols
 }
 
-func (t *tipam) newNetworkView(CIDR string) tview.Primitive {
+func (t *Tipam) newNetworkView(CIDR string) tview.Primitive {
 	_, ipNet, _ := net.ParseCIDR(CIDR) // TODO: unignore err
 	netMaskOnes, netMaskBits := ipNet.Mask.Size()
 
 	// nDepth is a temporary value that only affects the current "render".
 	// We use it to override it below in case the network is too small.
 	// This way when we pop the view off the stack, it won't affect the larger networks' views.
-	nDepth := t.networkDepth
+	nDepth := t.NetworkDepth
 
 	if netMaskOnes+nDepth > IPv4MaxBits {
 		nDepth = IPv4MaxBits - netMaskOnes
@@ -63,12 +64,12 @@ func (t *tipam) newNetworkView(CIDR string) tview.Primitive {
 		switch event.Rune() {
 
 		case '+':
-			t.networkDepth = clamp(t.networkDepth+1, 1, 10)
+			t.NetworkDepth = helper.Clamp(t.NetworkDepth+1, 1, 10)
 			networkView := t.newNetworkView(CIDR)
 			t.replaceTopView(ipNet.String(), networkView)
 
 		case '-':
-			t.networkDepth = clamp(t.networkDepth-1, 1, 10)
+			t.NetworkDepth = helper.Clamp(t.NetworkDepth-1, 1, 10)
 			networkView := t.newNetworkView(CIDR)
 			t.replaceTopView(ipNet.String(), networkView)
 
@@ -97,7 +98,7 @@ func (t *tipam) newNetworkView(CIDR string) tview.Primitive {
 }
 
 // network creates a new network view for the provided CIDR and pushes it onto the view stack
-func (t *tipam) network(CIDR string) {
+func (t *Tipam) network(CIDR string) {
 	networkView := t.newNetworkView(CIDR)
 
 	t.pushView(CIDR, networkView)

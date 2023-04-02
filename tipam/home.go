@@ -1,10 +1,8 @@
-package main
+package tipam
 
-import (
-	"github.com/rivo/tview"
-)
+import "github.com/rivo/tview"
 
-func (t *tipam) newHomeView() tview.Primitive {
+func (t *Tipam) newHomeView() tview.Primitive {
 	cell := tview.NewTableCell("10.0.0.0/8")
 	cell.SetExpansion(1)
 
@@ -19,7 +17,7 @@ func (t *tipam) newHomeView() tview.Primitive {
 	return table
 }
 
-func (t *tipam) home() {
+func (t *Tipam) Home() {
 	homeView := t.newHomeView()
 	t.pushView("home", homeView)
 }

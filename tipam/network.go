@@ -1,7 +1,9 @@
 package tipam
 
 import (
+	"fmt"
 	"net"
+	"strings"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gdamore/tcell/v2"
@@ -53,7 +55,13 @@ func (t *Tipam) newNetworkView(CIDR string) tview.Primitive {
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			subnet := subnets[col*rows+row]
-			cell := tview.NewTableCell(subnet.String())
+			subnetCidr := subnet.String()
+			subnetTags := t.lookupTags(subnetCidr)
+			text := subnetCidr
+			if len(subnetTags) != 0 {
+				text += fmt.Sprintf(" | %v", strings.Join(subnetTags, "/"))
+			}
+			cell := tview.NewTableCell(text)
 			cell.SetExpansion(1)
 			table.SetCell(int(row), int(col), cell)
 		}

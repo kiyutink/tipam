@@ -14,6 +14,7 @@ func NewRootCmd() *cobra.Command {
 		Use:   "tipam",
 		Short: "tipam is an IP Address Manager for the terminal",
 		Run: func(cmd *cobra.Command, args []string) {
+			// TODO: probably should move this rendering logic out of the cmd package
 			app := tview.NewApplication()
 			pages := tview.NewPages()
 
@@ -34,7 +35,9 @@ func NewRootCmd() *cobra.Command {
 				Pages:        pages,
 				NetworkDepth: 7,
 				ViewStack:    viewStack,
+				TagsByCIDR:   map[string][]string{},
 			}
+			t.LoadStorage()
 			t.Home()
 			app.Run()
 		},

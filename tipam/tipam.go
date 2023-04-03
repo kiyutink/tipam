@@ -2,6 +2,7 @@ package tipam
 
 import (
 	"github.com/kiyutink/tipam/helper"
+	"github.com/kiyutink/tipam/persist"
 	"github.com/rivo/tview"
 )
 
@@ -10,6 +11,19 @@ type Tipam struct {
 	NetworkDepth int
 	Pages        *tview.Pages
 	ViewStack    *helper.Stack[string]
+	TagsByCIDR   map[string][]string
+}
+
+func (t *Tipam) LoadStorage() {
+	client := persist.YamlReservationsClient{}
+	reservations, err := client.ReadAll()
+	if err != nil {
+		// pass
+	}
+
+	for _, res := range reservations {
+		t.TagsByCIDR[res.IPNet.String()] = res.Tags
+	}
 }
 
 func (t *Tipam) pushView(title string, p tview.Primitive) {

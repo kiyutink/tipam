@@ -2,42 +2,44 @@ package tipam
 
 import (
 	"github.com/kiyutink/tipam/helper"
-	"github.com/kiyutink/tipam/persist"
 	"github.com/rivo/tview"
 )
 
 type Tipam struct {
-	// NetworkDepth represents how many subnets will be show. When showing a /n network, subnets will have a mask of /(n + NetworkDepth)
-	NetworkDepth int
-	Pages        *tview.Pages
-	ViewStack    *helper.Stack[string]
-	TagsByCIDR   map[string][]string
+	MainVC *ViewContext
+	App    *tview.Application
 }
 
-func (t *Tipam) LoadStorage() {
-	client := persist.YamlReservationsClient{}
-	reservations, err := client.ReadAll()
-	if err != nil {
-		// pass
+func InitTipam() {
+	app := tview.NewApplication()
+	mainVCPages := tview.NewPages()
+
+	text := tview.NewTextView()
+	text.SetText("Id ex non minim laboris Lorem reprehenderit Lorem qui enim irure eu. Id cillum aliqua dolor ipsum enim esse adipisicing officia. Sint reprehenderit aute elit consectetur qui anim aute ullamco eu eiusmod aliqua. Proident duis cillum labore nisi qui commodo occaecat amet cillum laboris laborum sint laboris. Minim amet excepteur nisi eu velit exercitation veniam do pariatur pariatur nisi.")
+	text.SetBorder(true)
+
+	grid := tview.NewGrid()
+	grid.SetRows(5, 0)
+	grid.AddItem(text, 0, 0, 1, 1, 0, 0, false)
+	grid.AddItem(mainVCPages, 1, 0, 1, 1, 0, 0, true)
+
+	app.SetRoot(grid, true)
+	app.SetFocus(mainVCPages)
+
+	viewStack := helper.NewStack[View]()
+
+	mainVC := &ViewContext{
+		ViewStack: viewStack,
+		Pages:     mainVCPages,
+		Storage:   map[string]string{}, // TODO: temp
 	}
 
-	for _, res := range reservations {
-		t.TagsByCIDR[res.IPNet.String()] = res.Tags
+	mainVC.PushView(NewHomeView(*mainVC))
+
+	tipam := &Tipam{
+		MainVC: mainVC,
+		App:    app,
 	}
-}
 
-func (t *Tipam) pushView(title string, p tview.Primitive) {
-	t.Pages.AddAndSwitchToPage(title, p, true)
-	t.ViewStack.Push(title)
-}
-
-func (t *Tipam) replaceTopView(title string, p tview.Primitive) {
-	t.Pages.AddAndSwitchToPage(title, p, true)
-	t.ViewStack.ReplaceTop(title)
-}
-
-func (t *Tipam) popView() {
-	t.ViewStack.Pop()
-	top := t.ViewStack.Top()
-	t.Pages.SwitchToPage(top)
+	tipam.App.Run()
 }

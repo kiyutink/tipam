@@ -4,20 +4,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type CreateReservationRunner interface {
-	CreateReservation(cidr string, tags []string) error
+type Reserver interface {
+	Reserve(cidr string, tags []string) error
 }
 
-func newReserveCmd(runner CreateReservationRunner) *cobra.Command {
+func newReserveCmd(runner Reserver) *cobra.Command {
 	var cidr string
 	var tags []string
 
 	cmd := &cobra.Command{
 		Use:   "reserve",
-		Short: "Creates a block reseration",
-		Long:  "Creates a block reservation with provided CIDR and tags. The tags provided have to satisfy (read: include all the tags of) all the reservations that contain this new reservation.",
+		Short: "Create a block reseration",
+		Long:  "Create a block reservation with provided CIDR and tags. The tags provided have to satisfy (read: include all the tags of) all the reservations that contain this new reservation.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runner.CreateReservation(cidr, tags)
+			return runner.Reserve(cidr, tags)
 		},
 	}
 

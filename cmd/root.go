@@ -48,6 +48,7 @@ func NewRootCmd() *cobra.Command {
 		ReservationsClient: yamlReservationsClient,
 	}
 	rootCmd.AddCommand(newReserveCmd(runner))
+	rootCmd.AddCommand(newReleaseCmd(runner))
 
 	return rootCmd
 }

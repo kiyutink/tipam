@@ -13,6 +13,7 @@ type Tipam struct {
 func InitTipam() {
 	app := tview.NewApplication()
 	mainVCPages := tview.NewPages()
+	mainVCPages.SetBorder(true)
 
 	text := tview.NewTextView()
 	text.SetText("Id ex non minim laboris Lorem reprehenderit Lorem qui enim irure eu. Id cillum aliqua dolor ipsum enim esse adipisicing officia. Sint reprehenderit aute elit consectetur qui anim aute ullamco eu eiusmod aliqua. Proident duis cillum labore nisi qui commodo occaecat amet cillum laboris laborum sint laboris. Minim amet excepteur nisi eu velit exercitation veniam do pariatur pariatur nisi.")

@@ -126,7 +126,6 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 		}
 	})
 
-	table.SetBorder(true)
 	table.SetTitle(nv.ipNet.String())
 	return table
 }

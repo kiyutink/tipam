@@ -1,7 +1,10 @@
 package tipam
 
 import (
+	"fmt"
+	"log"
 	"net"
+	"strings"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gdamore/tcell/v2"
@@ -36,7 +39,10 @@ func (nw *NetworkView) Name() string {
 }
 
 func NewNetworkView(vc ViewContext, CIDR string, depth int) *NetworkView {
-	_, ipNet, _ := net.ParseCIDR(CIDR)
+	_, ipNet, err := net.ParseCIDR(CIDR)
+	if err != nil {
+		log.Fatalf("error parsing cidr \"%v\"", CIDR)
+	}
 
 	netMaskOnes, _ := ipNet.Mask.Size()
 
@@ -73,10 +79,8 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 			subnet := subnets[col*rows+row]
 			subnetCidr := subnet.String()
 			text := subnetCidr
-			if tags, ok := nv.vc.Storage[subnetCidr]; ok {
-				text += "| "
-				text += tags
-				// text += fmt.Sprintf(" | %v", strings.Join(subnetTags, "/"))
+			if tags, ok := nv.vc.Tags[subnetCidr]; ok {
+				text += fmt.Sprintf(" | %v", strings.Join(tags, "/"))
 			}
 			cell := tview.NewTableCell(text)
 			cell.SetExpansion(1)

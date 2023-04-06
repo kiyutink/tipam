@@ -1,6 +1,7 @@
 package tipam
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -8,14 +9,14 @@ import (
 )
 
 type ReserveView struct {
-	vc   ViewContext
-	cidr string
+	viewContext ViewContext
+	cidr        string
 }
 
 func NewReserveView(vc ViewContext, cidr string) *ReserveView {
 	return &ReserveView{
-		vc:   vc,
-		cidr: cidr,
+		viewContext: vc,
+		cidr:        cidr,
 	}
 }
 
@@ -34,15 +35,20 @@ func (rv *ReserveView) Primitive() tview.Primitive {
 		tagsInputVal = text
 	})
 	form.AddButton("Reserve", func() {
-		rv.vc.Storage[rv.cidr] = tagsInputVal
-		strings.Split(tagsInputVal, ",") // TODO: here
-		rv.vc.HideModal()
-		rv.vc.Draw()
+		tags := strings.Split(tagsInputVal, ",")
+		err := rv.viewContext.Runner.Reserve(rv.cidr, tags)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		rv.viewContext.Tags[rv.cidr] = tags
+		rv.viewContext.HideModal()
+		rv.viewContext.Draw()
 	})
 
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyESC {
-			rv.vc.HideModal()
+			rv.viewContext.HideModal()
 		}
 		return event
 	})

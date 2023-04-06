@@ -1,7 +1,9 @@
 package tipam
 
 import (
+	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
+	"github.com/kiyutink/tipam/persist"
 	"github.com/rivo/tview"
 )
 
@@ -28,11 +30,17 @@ func InitTipam() {
 	app.SetFocus(pages)
 
 	viewStack := helper.NewStack[View]()
+	runner := &core.Runner{
+		ReservationsClient: &persist.YamlReservationsClient{},
+	}
+
+	tags, _ := runner.GetTags()
 
 	viewContext := &ViewContext{
 		ViewStack: viewStack,
 		Pages:     pages,
-		Storage:   map[string]string{}, // TODO: temp
+		Tags:      tags,
+		Runner:    runner,
 	}
 
 	viewContext.PushView(NewHomeView(*viewContext))

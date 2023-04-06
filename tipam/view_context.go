@@ -1,6 +1,7 @@
 package tipam
 
 import (
+	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
 	"github.com/rivo/tview"
 )
@@ -8,7 +9,8 @@ import (
 type ViewContext struct {
 	ViewStack *helper.Stack[View]
 	Pages     *tview.Pages
-	Storage   map[string]string // TODO: this is temporary
+	Tags      map[string][]string
+	Runner    *core.Runner
 }
 
 func (vc *ViewContext) PushView(view View) {

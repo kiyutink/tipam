@@ -12,7 +12,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-const IPv4MaxBits = 32
+const (
+	IPv4MaxBits  = 32
+	CIDRMaxChars = 18
+)
 
 func rowsAndCols(cells int) (int, int) {
 	maxCols := 4
@@ -80,7 +83,7 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 			subnetCidr := subnet.String()
 			text := subnetCidr
 			if tags, ok := nv.vc.Tags[subnetCidr]; ok {
-				text += fmt.Sprintf(" | %v", strings.Join(tags, "/"))
+				text += fmt.Sprintf(" ➜ %v", strings.Join(tags, "/"))
 			}
 			cell := tview.NewTableCell(text)
 			cell.SetExpansion(1)

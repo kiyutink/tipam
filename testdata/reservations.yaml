@@ -52,3 +52,6 @@
     - production
     - us-east-1
     - kube
+- cidr: 172.16.32.0/19
+  tags:
+    - test

@@ -1,6 +1,7 @@
 package tipam
 
 import (
+	"github.com/common-nighthawk/go-figure"
 	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
 	"github.com/kiyutink/tipam/persist"
@@ -12,18 +13,36 @@ type Tipam struct {
 	App         *tview.Application
 }
 
+const helpText = `<enter> - open
+<r> - reserve
+<d> - release
+<esc> - go back`
+
 func InitTipam() {
 	app := tview.NewApplication()
 	pages := tview.NewPages()
 	pages.SetBorder(true)
 
-	text := tview.NewTextView()
-	text.SetText("Id ex non minim laboris Lorem reprehenderit Lorem qui enim irure eu. Id cillum aliqua dolor ipsum enim esse adipisicing officia. Sint reprehenderit aute elit consectetur qui anim aute ullamco eu eiusmod aliqua. Proident duis cillum labore nisi qui commodo occaecat amet cillum laboris laborum sint laboris. Minim amet excepteur nisi eu velit exercitation veniam do pariatur pariatur nisi.")
-	text.SetBorder(true)
+	logo := tview.NewTextView()
+	logo.SetText(figure.NewFigure("tipam", "", true).String())
+
+	data := tview.NewTextView()
+	data.SetText("data")
+
+	help := tview.NewTextView()
+	// TODO: using helper.Align doesn't allow for coloring. What do?
+	help.SetText(helper.Align(helpText, "-"))
+
+	metaGrid := tview.NewGrid()
+	metaGrid.SetColumns(0, 0, 0, 0)
+
+	metaGrid.AddItem(data, 0, 0, 1, 2, 0, 0, false)
+	metaGrid.AddItem(help, 0, 2, 1, 1, 0, 0, false)
+	metaGrid.AddItem(logo, 0, 3, 1, 1, 0, 0, false)
 
 	grid := tview.NewGrid()
-	grid.SetRows(5, 0)
-	grid.AddItem(text, 0, 0, 1, 1, 0, 0, false)
+	grid.SetRows(6, 0)
+	grid.AddItem(metaGrid, 0, 0, 1, 1, 0, 0, false)
 	grid.AddItem(pages, 1, 0, 1, 1, 0, 0, true)
 
 	app.SetRoot(grid, true)

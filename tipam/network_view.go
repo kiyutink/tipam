@@ -77,11 +77,26 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 		subnet, _ = cidr.NextSubnet(subnet, subnetMaskOnes)
 	}
 
+	// TODO: this is pretty ugly, we're essentially rendering everything twice.
+	// Would be nice to make some temporary intermediate value. Maybe a two-dimentional slice?
+	widest := make([]int, cols)
+	for row := 0; row < rows; row++ {
+		for col := 0; col < cols; col++ {
+			subnet := subnets[col*rows+row]
+			subnetCidr := subnet.String()
+
+			if widest[col] < len(subnetCidr) {
+				widest[col] = len(subnetCidr)
+			}
+		}
+	}
+
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			subnet := subnets[col*rows+row]
 			subnetCidr := subnet.String()
 			text := subnetCidr
+			text = helper.PadRight(text, widest[col]-len(text))
 			if tags, ok := nv.vc.Tags[subnetCidr]; ok {
 				text += fmt.Sprintf(" ➜ %v", strings.Join(tags, "/"))
 			}

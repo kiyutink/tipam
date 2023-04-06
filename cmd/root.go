@@ -16,7 +16,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	yamlReservationsClient := &persist.YamlReservationsClient{}
+	yamlReservationsClient := persist.NewLocalYamlReservationsClient("testdata/reservations.yaml")
 	runner := &core.Runner{
 		ReservationsClient: yamlReservationsClient,
 	}

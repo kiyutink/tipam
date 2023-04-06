@@ -9,15 +9,23 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type YamlReservationsClient struct{}
+type LocalYamlReservationsClient struct {
+	fileName string
+}
+
+func NewLocalYamlReservationsClient(fileName string) *LocalYamlReservationsClient {
+	return &LocalYamlReservationsClient{
+		fileName: fileName,
+	}
+}
 
 type reservationYamlRecord struct {
 	CIDR string   `yaml:"cidr"`
 	Tags []string `yaml:"tags"`
 }
 
-func (yrc *YamlReservationsClient) Create(reservation core.Reservation) error {
-	file, err := os.OpenFile("testdata/reservations.yaml", os.O_WRONLY|os.O_APPEND, 0) // TODO: don't hardcode the filename
+func (yrc *LocalYamlReservationsClient) Create(reservation core.Reservation) error {
+	file, err := os.OpenFile(yrc.fileName, os.O_WRONLY|os.O_APPEND, 0)
 	defer file.Close()
 	if err != nil {
 		return fmt.Errorf("error persisting reservation to yaml: %w", err)
@@ -35,10 +43,10 @@ func (yrc *YamlReservationsClient) Create(reservation core.Reservation) error {
 	return nil
 }
 
-func (yrc *YamlReservationsClient) ReadAll() ([]core.Reservation, error) {
+func (yrc *LocalYamlReservationsClient) ReadAll() ([]core.Reservation, error) {
 	reservationRecords := []reservationYamlRecord{}
 
-	file, err := os.Open("testdata/reservations.yaml") // TODO: don't hardcode the filename
+	file, err := os.Open(yrc.fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening persistence yaml file: %w", err)
 	}

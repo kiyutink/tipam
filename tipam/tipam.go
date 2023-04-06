@@ -31,7 +31,7 @@ func InitTipam() {
 
 	viewStack := helper.NewStack[View]()
 	runner := &core.Runner{
-		ReservationsClient: &persist.YamlReservationsClient{},
+		ReservationsClient: persist.NewLocalYamlReservationsClient("testdata/reservations.yaml"),
 	}
 
 	tags, _ := runner.GetTags()

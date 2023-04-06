@@ -77,8 +77,8 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 		subnet, _ = cidr.NextSubnet(subnet, subnetMaskOnes)
 	}
 
-	// TODO: this is pretty ugly, we're essentially rendering everything twice.
-	// Would be nice to make some temporary intermediate value. Maybe a two-dimentional slice?
+	// Calculate the widest CIDR in each column. We can then use this to right-pad all of them.
+	// This way we can align all the tags
 	widest := make([]int, cols)
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {

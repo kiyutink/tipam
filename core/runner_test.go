@@ -1,7 +1,7 @@
 package core
 
 type testReservationsClient struct {
-	reservationsClient
+	Persistor
 	testCreate  func(Reservation) error
 	testReadAll func() ([]Reservation, error)
 }

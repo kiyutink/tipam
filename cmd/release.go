@@ -1,19 +1,24 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/persist"
+	"github.com/spf13/cobra"
+)
 
-type Releaser interface {
-	Release(cidr string) error
-}
-
-func newReleaseCmd(r Releaser) *cobra.Command {
+func newReleaseCmd() *cobra.Command {
 	var cidr string
 	cmd := &cobra.Command{
 		Use:   "release",
 		Short: "Release a block reservation or claim",
 		Long:  "Release the block reservation or claim with the provided cidr",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return r.Release(cidr)
+			p, err := persist.NewPersistor(persistFlags)
+			if err != nil {
+				return err
+			}
+			runner := core.NewRunner(p)
+			return runner.Release(cidr)
 		},
 	}
 

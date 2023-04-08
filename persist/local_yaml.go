@@ -1,6 +1,7 @@
 package persist
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -9,34 +10,48 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type LocalYamlReservationsClient struct {
+const PersistorLocalYaml = "localyaml"
+
+type LocalYAMLPersistor struct {
 	fileName string
 }
 
-func NewLocalYamlReservationsClient(fileName string) *LocalYamlReservationsClient {
-	return &LocalYamlReservationsClient{
+func NewLocalYAMLPersistor(fileName string) *LocalYAMLPersistor {
+	return &LocalYAMLPersistor{
 		fileName: fileName,
 	}
 }
 
-type stateFile struct {
+func (yrc *LocalYAMLPersistor) EnsureFileExists() error {
+	_, statErr := os.Stat(yrc.fileName)
+
+	if errors.Is(statErr, os.ErrNotExist) {
+		f, createErr := os.Create(yrc.fileName)
+		defer f.Close()
+		return createErr
+	}
+
+	return statErr
+}
+
+type localYAMLStateFile struct {
 	APIVersion   int                 `yaml:"apiVersion"`
 	Reservations map[string][]string `yaml:"reservations,omitempty"`
 	Claims       map[string][]string `yaml:"claims,omitempty"`
 }
 
-func (yrc *LocalYamlReservationsClient) readState() (*stateFile, error) {
+func (yrc *LocalYAMLPersistor) readState() (*localYAMLStateFile, error) {
 	bytes, err := os.ReadFile(yrc.fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)
 	}
-	state := stateFile{}
+	state := localYAMLStateFile{}
 
 	err = yaml.Unmarshal(bytes, &state)
 	return &state, nil
 }
 
-func (yrc *LocalYamlReservationsClient) Create(reservation core.Reservation) error {
+func (yrc *LocalYAMLPersistor) Create(reservation core.Reservation) error {
 	state, err := yrc.readState()
 	if err != nil {
 		return fmt.Errorf("error persisting reservation to yaml: %w", err)
@@ -59,7 +74,7 @@ func (yrc *LocalYamlReservationsClient) Create(reservation core.Reservation) err
 	return nil
 }
 
-func (yrc *LocalYamlReservationsClient) ReadAll() ([]core.Reservation, error) {
+func (yrc *LocalYAMLPersistor) ReadAll() ([]core.Reservation, error) {
 	state, err := yrc.readState()
 	if err != nil {
 		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)

@@ -1,14 +1,12 @@
 package cmd
 
 import (
+	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/persist"
 	"github.com/spf13/cobra"
 )
 
-type Reserver interface {
-	Reserve(cidr string, tags []string) error
-}
-
-func newReserveCmd(runner Reserver) *cobra.Command {
+func newReserveCmd() *cobra.Command {
 	var cidr string
 	var tags []string
 
@@ -17,6 +15,11 @@ func newReserveCmd(runner Reserver) *cobra.Command {
 		Short: "Create a block reseration",
 		Long:  "Create a block reservation with provided CIDR and tags. The tags provided have to satisfy (read: include all the tags of) all the reservations that contain this new reservation.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			p, err := persist.NewPersistor(persistFlags)
+			if err != nil {
+				return err
+			}
+			runner := core.NewRunner(p)
 			return runner.Reserve(cidr, tags)
 		},
 	}

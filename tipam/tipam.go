@@ -4,7 +4,6 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
-	"github.com/kiyutink/tipam/persist"
 	"github.com/rivo/tview"
 )
 
@@ -18,7 +17,7 @@ const helpText = `<enter> - open
 <d> - release
 <esc> - go back`
 
-func InitTipam() {
+func InitTipam(runner *core.Runner) {
 	app := tview.NewApplication()
 	pages := tview.NewPages()
 	pages.SetBorder(true)
@@ -49,9 +48,6 @@ func InitTipam() {
 	app.SetFocus(pages)
 
 	viewStack := helper.NewStack[View]()
-	runner := &core.Runner{
-		ReservationsClient: persist.NewLocalYamlReservationsClient("testdata/reservations.yaml"),
-	}
 
 	tags, _ := runner.GetTags()
 

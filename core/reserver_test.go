@@ -7,7 +7,7 @@ import (
 
 func TestReserve(t *testing.T) {
 	tr := Runner{
-		ReservationsClient: &testReservationsClient{
+		Persistor: &testReservationsClient{
 			testCreate: func(r Reservation) error {
 				return nil
 			},

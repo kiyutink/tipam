@@ -1,6 +1,6 @@
 package core
 
-type reservationsClient interface {
+type Persistor interface {
 	Create(reservation Reservation) error
 	ReadAll() ([]Reservation, error)
 	// Replace(cidr string, reservation Reservation) error
@@ -8,5 +8,11 @@ type reservationsClient interface {
 }
 
 type Runner struct {
-	ReservationsClient reservationsClient
+	Persistor Persistor
+}
+
+func NewRunner(p Persistor) *Runner {
+	return &Runner{
+		Persistor: p,
+	}
 }

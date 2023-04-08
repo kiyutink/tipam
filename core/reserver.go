@@ -9,7 +9,7 @@ func (r *Runner) Reserve(cidr string, tags []string) error {
 	if err != nil {
 		return fmt.Errorf("error parsing cidr %v: %w", cidr, err)
 	}
-	allReservations, err := r.ReservationsClient.ReadAll()
+	allReservations, err := r.Persistor.ReadAll()
 	if err != nil {
 		return fmt.Errorf("error reading existing reservations: %w", err)
 	}
@@ -23,7 +23,7 @@ func (r *Runner) Reserve(cidr string, tags []string) error {
 		}
 	}
 
-	err = r.ReservationsClient.Create(*reservation)
+	err = r.Persistor.Create(*reservation)
 	if err != nil {
 		return fmt.Errorf("error persisting reservation: %w", err)
 	}

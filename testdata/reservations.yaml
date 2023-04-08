@@ -1,57 +1,14 @@
-- cidr: 10.0.0.0/15
-  tags:
-    - production
-    - us-east-1
-    - kube
+apiVersion: 1
+reservations:
+  10.0.0.0/15:
     - test
-- cidr: 10.64.0.0/15
-  tags:
+  10.0.64.0/19:
     - production
-    - us-east-1
-    - kube
+    - database
+    - postgres
+  10.2.0.0/15:
+    - test2
+  172.16.0.0/16:
     - test
-- cidr: 10.128.0.0/15
-  tags:
-    - production
-    - us-east-1
-    - kube
-    - test
-- cidr: 10.192.0.0/15
-  tags:
-    - production
-    - us-east-1
-    - kube
-    - test
-- cidr: 10.0.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 10.16.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 10.32.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 10.48.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 10.60.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 10.72.0.0/12
-  tags:
-    - production
-    - us-east-1
-    - kube
-- cidr: 172.16.32.0/19
-  tags:
-    - test
+  172.18.0.0/15:
+    - "123"

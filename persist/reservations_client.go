@@ -19,23 +19,39 @@ func NewLocalYamlReservationsClient(fileName string) *LocalYamlReservationsClien
 	}
 }
 
-type reservationYamlRecord struct {
-	CIDR string   `yaml:"cidr"`
-	Tags []string `yaml:"tags"`
+type stateFile struct {
+	APIVersion   int                 `yaml:"apiVersion"`
+	Reservations map[string][]string `yaml:"reservations,omitempty"`
+	Claims       map[string][]string `yaml:"claims,omitempty"`
+}
+
+func (yrc *LocalYamlReservationsClient) readState() (*stateFile, error) {
+	bytes, err := os.ReadFile(yrc.fileName)
+	if err != nil {
+		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)
+	}
+	state := stateFile{}
+
+	err = yaml.Unmarshal(bytes, &state)
+	return &state, nil
 }
 
 func (yrc *LocalYamlReservationsClient) Create(reservation core.Reservation) error {
-	file, err := os.OpenFile(yrc.fileName, os.O_WRONLY|os.O_APPEND, 0)
-	defer file.Close()
+	state, err := yrc.readState()
 	if err != nil {
 		return fmt.Errorf("error persisting reservation to yaml: %w", err)
 	}
 
-	err = yaml.NewEncoder(file).Encode([]reservationYamlRecord{{
-		CIDR: reservation.IPNet.String(),
-		Tags: reservation.Tags,
-	}})
+	state.Reservations[reservation.IPNet.String()] = reservation.Tags
 
+	file, err := os.OpenFile(yrc.fileName, os.O_WRONLY|os.O_TRUNC, 0)
+	if err != nil {
+		return fmt.Errorf("error persisting reservation to yaml: %w", err)
+	}
+
+	encoder := yaml.NewEncoder(file)
+	encoder.SetIndent(2)
+	err = encoder.Encode(state)
 	if err != nil {
 		return fmt.Errorf("error persisting reservation to yaml: %w", err)
 	}
@@ -44,29 +60,22 @@ func (yrc *LocalYamlReservationsClient) Create(reservation core.Reservation) err
 }
 
 func (yrc *LocalYamlReservationsClient) ReadAll() ([]core.Reservation, error) {
-	reservationRecords := []reservationYamlRecord{}
-
-	file, err := os.Open(yrc.fileName)
+	state, err := yrc.readState()
 	if err != nil {
-		return nil, fmt.Errorf("error opening persistence yaml file: %w", err)
+		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)
 	}
 
-	err = yaml.NewDecoder(file).Decode(&reservationRecords)
-	if err != nil {
-		return nil, fmt.Errorf("error reading reservations from yaml: %w", err)
-	}
+	reservations := []core.Reservation{}
 
-	reservations := make([]core.Reservation, len(reservationRecords))
-
-	for i, resRec := range reservationRecords {
-		_, ipNet, err := net.ParseCIDR(resRec.CIDR)
+	for CIDR, tags := range state.Reservations {
+		_, ipNet, err := net.ParseCIDR(CIDR)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing cidr %v from a reservation: %w", resRec.CIDR, err)
+			return nil, fmt.Errorf("error parsing cidr %v from a reservation: %w", CIDR, err)
 		}
-		reservations[i] = core.Reservation{
+		reservations = append(reservations, core.Reservation{
 			IPNet: ipNet,
-			Tags:  resRec.Tags,
-		}
+			Tags:  tags,
+		})
 	}
 
 	return reservations, nil

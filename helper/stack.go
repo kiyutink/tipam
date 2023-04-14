@@ -32,3 +32,7 @@ func (s *Stack[T]) ReplaceTop(t T) {
 func (s *Stack[T]) Len() int {
 	return len(s.slice)
 }
+
+func (s *Stack[T]) Slice() []T {
+	return s.slice
+}

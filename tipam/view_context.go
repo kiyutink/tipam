@@ -1,6 +1,8 @@
 package tipam
 
 import (
+	"strings"
+
 	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
 	"github.com/rivo/tview"
@@ -19,6 +21,7 @@ func (vc *ViewContext) PushView(view View) {
 	name := view.Name()
 
 	vc.Pages.AddAndSwitchToPage(name, p, true)
+	vc.Pages.SetTitle(vc.getBreadcrumbs())
 }
 
 func (vc *ViewContext) GetTopView() View {
@@ -42,4 +45,14 @@ func (vc *ViewContext) HideModal() {
 func (vc *ViewContext) Draw() {
 	top := vc.ViewStack.Top()
 	vc.Pages.AddAndSwitchToPage(top.Name(), top.Primitive(), true)
+	vc.Pages.SetTitle(vc.getBreadcrumbs())
+}
+
+func (vc *ViewContext) getBreadcrumbs() string {
+	viewNames := []string{}
+	for _, view := range vc.ViewStack.Slice() {
+		viewNames = append(viewNames, view.Name())
+	}
+
+	return strings.Join(viewNames, "->")
 }

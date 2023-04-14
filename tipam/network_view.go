@@ -144,11 +144,17 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 
 		case 'r':
 			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
+			if _, ok := nv.viewContext.State.Reservations[selectedSubnet.String()]; ok {
+				break
+			}
 			reserveView := NewReserveView(nv.viewContext, selectedSubnet.String())
 			nv.viewContext.ShowModal(reserveView)
 
 		case 'd':
 			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
+			if _, ok := nv.viewContext.State.Reservations[selectedSubnet.String()]; !ok {
+				break
+			}
 			releaseView := NewReleaseView(nv.viewContext, selectedSubnet.String())
 			nv.viewContext.ShowModal(releaseView)
 

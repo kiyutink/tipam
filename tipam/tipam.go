@@ -27,17 +27,16 @@ func InitTipam(runner *core.Runner) {
 
 	data := tview.NewTextView()
 	data.SetText("data")
-
 	help := tview.NewTextView()
 	// TODO: using helper.Align doesn't allow for coloring. What do?
 	help.SetText(helper.Align(helpText, "-"))
 
 	metaGrid := tview.NewGrid()
-	metaGrid.SetColumns(0, 0, 0, 0)
+	metaGrid.SetColumns(0, 0, 0)
 
-	metaGrid.AddItem(data, 0, 0, 1, 2, 0, 0, false)
-	metaGrid.AddItem(help, 0, 2, 1, 1, 0, 0, false)
-	metaGrid.AddItem(logo, 0, 3, 1, 1, 0, 0, false)
+	metaGrid.AddItem(data, 0, 0, 1, 1, 0, 0, false)
+	metaGrid.AddItem(help, 0, 1, 1, 1, 0, 0, false)
+	metaGrid.AddItem(logo, 0, 2, 1, 1, 0, 0, false)
 
 	grid := tview.NewGrid()
 	grid.SetRows(6, 0)

@@ -7,6 +7,8 @@ import (
 	"github.com/rivo/tview"
 )
 
+var glapp *tview.Application
+
 type Tipam struct {
 	ViewContext *ViewContext
 	App         *tview.Application
@@ -44,7 +46,9 @@ func InitTipam(runner *core.Runner) {
 	grid.AddItem(pages, 1, 0, 1, 1, 0, 0, true)
 
 	app.SetRoot(grid, true)
-	app.SetFocus(pages)
+	app.SetFocus(grid)
+
+	glapp = app
 
 	viewStack := helper.NewStack[View]()
 

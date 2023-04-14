@@ -147,6 +147,11 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 			reserveView := NewReserveView(nv.viewContext, selectedSubnet.String())
 			nv.viewContext.ShowModal(reserveView)
 
+		case 'd':
+			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
+			releaseView := NewReleaseView(nv.viewContext, selectedSubnet.String())
+			nv.viewContext.ShowModal(releaseView)
+
 		default:
 			// nothing
 		}

@@ -33,11 +33,13 @@ func (rv *ReserveView) Primitive() tview.Primitive {
 	form.SetBorder(true)
 
 	form.AddTextView("CIDR", rv.cidr, 40, 1, false, false)
-	form.AddInputField("Tags (comma separated)", "", 0, nil, func(text string) {
+	form.AddInputField("Tags (separated with /)", "", 0, nil, func(text string) {
 		tagsInputVal = text
 	})
 	form.AddButton("Reserve", func() {
-		tags := strings.Split(tagsInputVal, ",")
+		tags := strings.Split(tagsInputVal, "/")
+		// TODO: We shouldn't use the Reserve from runner, but implement the reserve function for the view, as we don't want to keep
+		// State in sync (reserve only modifies its local state)
 		err := rv.viewContext.Runner.Reserve(rv.cidr, tags)
 		if err != nil {
 			fmt.Println(err)

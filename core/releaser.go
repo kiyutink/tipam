@@ -1,8 +1,13 @@
 package core
 
-import "fmt"
-
 func (r *Runner) Release(cidr string) error {
-	fmt.Println("cidr to release:", cidr)
-	return nil
+	state, err := r.Persistor.Read()
+	if err != nil {
+		return err
+	}
+
+	delete(state.Reservations, cidr)
+	err = r.Persistor.Persist(state)
+
+	return err
 }

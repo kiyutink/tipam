@@ -1,15 +1,15 @@
 package core
 
-type testReservationsClient struct {
+type testPersistor struct {
 	Persistor
-	testCreate  func(Reservation) error
-	testReadAll func() ([]Reservation, error)
+	testPersist func(*State) error
+	testRead    func() (*State, error)
 }
 
-func (trc *testReservationsClient) Create(r Reservation) error {
-	return trc.testCreate(r)
+func (tp *testPersistor) Persist(s *State) error {
+	return tp.testPersist(s)
 }
 
-func (trc *testReservationsClient) ReadAll() ([]Reservation, error) {
-	return trc.testReadAll()
+func (tp *testPersistor) Read() (*State, error) {
+	return tp.testRead()
 }

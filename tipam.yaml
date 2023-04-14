@@ -1,0 +1,20 @@
+apiVersion: 1
+reservations:
+  10.0.0.0/15:
+    - test
+  10.0.7.128/25:
+    - test
+    - something
+  10.0.8.0/22:
+    - test
+    - hello
+  10.2.0.0/15:
+    - test
+  10.2.0.0/22:
+    - test
+    - hello
+  172.16.0.0/19:
+    - test
+  172.16.0.192/26:
+    - test
+    - hello

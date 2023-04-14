@@ -2,7 +2,6 @@ package persist
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"os"
 
@@ -10,23 +9,38 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const PersistorLocalYaml = "localyaml"
+const (
+	DEFAULT_YAML_STATE_API_VERSION = 1
+	PersistorLocalYaml             = "localyaml"
+)
+
+type YAMLState struct {
+	APIVersion   int                 `yaml:"apiVersion"`
+	Reservations map[string][]string `yaml:"reservations,omitempty"`
+	Claims       map[string][]string `yaml:"claims,omitempty"`
+}
+
+func newEmptyYAMLState() *YAMLState {
+	return &YAMLState{
+		APIVersion:   DEFAULT_YAML_STATE_API_VERSION,
+		Reservations: map[string][]string{},
+		Claims:       map[string][]string{},
+	}
+}
 
 type LocalYAMLPersistor struct {
 	fileName string
 }
 
 func NewLocalYAMLPersistor(fileName string) *LocalYAMLPersistor {
-	return &LocalYAMLPersistor{
-		fileName: fileName,
-	}
+	return &LocalYAMLPersistor{fileName}
 }
 
-func (yrc *LocalYAMLPersistor) EnsureFileExists() error {
-	_, statErr := os.Stat(yrc.fileName)
+func (lyp *LocalYAMLPersistor) EnsureFileExists() error {
+	_, statErr := os.Stat(lyp.fileName)
 
 	if errors.Is(statErr, os.ErrNotExist) {
-		f, createErr := os.Create(yrc.fileName)
+		f, createErr := os.Create(lyp.fileName)
 		defer f.Close()
 		return createErr
 	}
@@ -34,64 +48,63 @@ func (yrc *LocalYAMLPersistor) EnsureFileExists() error {
 	return statErr
 }
 
-type localYAMLStateFile struct {
-	APIVersion   int                 `yaml:"apiVersion"`
-	Reservations map[string][]string `yaml:"reservations,omitempty"`
-	Claims       map[string][]string `yaml:"claims,omitempty"`
-}
-
-func (yrc *LocalYAMLPersistor) readState() (*localYAMLStateFile, error) {
-	bytes, err := os.ReadFile(yrc.fileName)
+func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
+	file, err := os.OpenFile(lyp.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
-		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)
+		return err
 	}
-	state := localYAMLStateFile{}
+	defer file.Close()
 
-	err = yaml.Unmarshal(bytes, &state)
-	return &state, nil
-}
+	yamlState := newEmptyYAMLState()
 
-func (yrc *LocalYAMLPersistor) Create(reservation core.Reservation) error {
-	state, err := yrc.readState()
-	if err != nil {
-		return fmt.Errorf("error persisting reservation to yaml: %w", err)
+	for cidr, r := range s.Reservations {
+		yamlState.Reservations[cidr] = r.Tags
 	}
 
-	state.Reservations[reservation.IPNet.String()] = reservation.Tags
-
-	file, err := os.OpenFile(yrc.fileName, os.O_WRONLY|os.O_TRUNC, 0)
-	if err != nil {
-		return fmt.Errorf("error persisting reservation to yaml: %w", err)
-	}
+	// for cidr, c := range s.Claims {
+	// }
 
 	encoder := yaml.NewEncoder(file)
 	encoder.SetIndent(2)
-	err = encoder.Encode(state)
-	if err != nil {
-		return fmt.Errorf("error persisting reservation to yaml: %w", err)
-	}
 
-	return nil
+	err = encoder.Encode(yamlState)
+
+	return err
 }
 
-func (yrc *LocalYAMLPersistor) ReadAll() ([]core.Reservation, error) {
-	state, err := yrc.readState()
+func (lyp *LocalYAMLPersistor) Read() (*core.State, error) {
+	bytes, err := os.ReadFile(lyp.fileName)
+
+	switch {
+
+	case errors.Is(err, os.ErrNotExist):
+		fallthrough
+	case err == nil:
+		// Do nothing
+	default:
+		return nil, err
+	}
+
+	yamlState := newEmptyYAMLState()
+
+	err = yaml.Unmarshal(bytes, yamlState)
+
 	if err != nil {
-		return nil, fmt.Errorf("error persisting reservation to yaml: %w", err)
+		return nil, err
 	}
 
-	reservations := []core.Reservation{}
+	state := &core.State{
+		Reservations: map[string]core.Reservation{},
+	}
 
-	for CIDR, tags := range state.Reservations {
-		_, ipNet, err := net.ParseCIDR(CIDR)
+	for c, tags := range yamlState.Reservations {
+		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing cidr %v from a reservation: %w", CIDR, err)
+			return nil, err
 		}
-		reservations = append(reservations, core.Reservation{
-			IPNet: ipNet,
-			Tags:  tags,
-		})
+		r := core.NewReservation(ipNet, tags)
+		state.Reservations[c] = r
 	}
 
-	return reservations, nil
+	return state, nil
 }

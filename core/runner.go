@@ -1,10 +1,8 @@
 package core
 
 type Persistor interface {
-	Create(reservation Reservation) error
-	ReadAll() ([]Reservation, error)
-	// Replace(cidr string, reservation Reservation) error
-	// Delete(cidr string) error
+	Persist(*State) error
+	Read() (*State, error)
 }
 
 type Runner struct {

@@ -9,7 +9,7 @@ import (
 type ViewContext struct {
 	ViewStack *helper.Stack[View]
 	Pages     *tview.Pages
-	Tags      map[string][]string
+	State     *core.State
 	Runner    *core.Runner
 }
 

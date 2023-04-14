@@ -49,16 +49,19 @@ func InitTipam(runner *core.Runner) {
 
 	viewStack := helper.NewStack[View]()
 
-	tags, _ := runner.GetTags()
+	state, err := runner.Persistor.Read()
+	if err != nil {
+		panic(err)
+	}
 
 	viewContext := &ViewContext{
 		ViewStack: viewStack,
 		Pages:     pages,
-		Tags:      tags,
+		State:     state,
 		Runner:    runner,
 	}
 
-	viewContext.PushView(NewHomeView(*viewContext))
+	viewContext.PushView(NewHomeView(viewContext))
 
 	tipam := &Tipam{
 		ViewContext: viewContext,

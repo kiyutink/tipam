@@ -16,8 +16,7 @@ func NewPersistor(pf PersistFlags) (core.Persistor, error) {
 	switch pf.PersistorType {
 	case PersistorLocalYaml:
 		p := NewLocalYAMLPersistor(pf.LocalYAMLFileName)
-		err := p.EnsureFileExists()
-		return p, err
+		return p, nil
 	}
 	return nil, fmt.Errorf("unknown persistor type %v", pf.PersistorType)
 }

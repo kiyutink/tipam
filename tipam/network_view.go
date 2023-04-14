@@ -6,8 +6,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/apparentlymart/go-cidr/cidr"
+	gocidr "github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gdamore/tcell/v2"
+	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
 	"github.com/rivo/tview"
 )
@@ -30,7 +31,7 @@ func rowsAndCols(cells int) (int, int) {
 }
 
 type NetworkView struct {
-	vc          ViewContext
+	viewContext *ViewContext
 	ipNet       *net.IPNet
 	depth       int
 	selectedRow int
@@ -41,7 +42,7 @@ func (nw *NetworkView) Name() string {
 	return nw.ipNet.String()
 }
 
-func NewNetworkView(vc ViewContext, CIDR string, depth int) *NetworkView {
+func NewNetworkView(vc *ViewContext, CIDR string, depth int) *NetworkView {
 	_, ipNet, err := net.ParseCIDR(CIDR)
 	if err != nil {
 		log.Fatalf("error parsing cidr \"%v\"", CIDR)
@@ -54,10 +55,38 @@ func NewNetworkView(vc ViewContext, CIDR string, depth int) *NetworkView {
 	}
 
 	return &NetworkView{
-		vc:    vc,
-		ipNet: ipNet,
-		depth: depth,
+		viewContext: vc,
+		ipNet:       ipNet,
+		depth:       depth,
 	}
+}
+
+func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
+	subnetCidr := subnet.String()
+	text := subnetCidr
+	text = helper.PadRight(text, colWidth-len(text))
+	if res, ok := nv.viewContext.State.Reservations[subnetCidr]; ok {
+		text += fmt.Sprintf(" = %v", strings.Join(res.Tags, "/"))
+	} else {
+		newRes := core.NewReservation(subnet, nil)
+		parents := nv.viewContext.State.FindParentReservations(newRes)
+
+		if len(parents) > 0 {
+			longestTagsRes := parents[0]
+			for _, p := range parents {
+				if len(p.Tags) > len(longestTagsRes.Tags) {
+					longestTagsRes = p
+				}
+			}
+
+			text += fmt.Sprintf(" ~ [grey]%v[:grey]", strings.Join(longestTagsRes.Tags, "/"))
+		}
+	}
+
+	cell := tview.NewTableCell(text)
+	cell.SetExpansion(1)
+
+	return cell
 }
 
 func (nv *NetworkView) Primitive() tview.Primitive {
@@ -74,19 +103,19 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 
 	for nv.ipNet.Contains(subnet.IP) {
 		subnets = append(subnets, subnet)
-		subnet, _ = cidr.NextSubnet(subnet, subnetMaskOnes)
+		subnet, _ = gocidr.NextSubnet(subnet, subnetMaskOnes)
 	}
 
-	// Calculate the widest CIDR in each column. We can then use this to right-pad all of them.
+	// Calculate the colWidths CIDR in each column. We can then use this to right-pad all of them.
 	// This way we can align all the tags
-	widest := make([]int, cols)
+	colWidths := make([]int, cols)
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			subnet := subnets[col*rows+row]
 			subnetCidr := subnet.String()
 
-			if widest[col] < len(subnetCidr) {
-				widest[col] = len(subnetCidr)
+			if colWidths[col] < len(subnetCidr) {
+				colWidths[col] = len(subnetCidr)
 			}
 		}
 	}
@@ -94,15 +123,7 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			subnet := subnets[col*rows+row]
-			subnetCidr := subnet.String()
-			text := subnetCidr
-			text = helper.PadRight(text, widest[col]-len(text))
-			if tags, ok := nv.vc.Tags[subnetCidr]; ok {
-				text += fmt.Sprintf(" ➜ %v", strings.Join(tags, "/"))
-			}
-			cell := tview.NewTableCell(text)
-			cell.SetExpansion(1)
-			table.SetCell(int(row), int(col), cell)
+			table.SetCell(int(row), int(col), nv.cell(subnet, colWidths[col]))
 		}
 	}
 	table.Select(nv.selectedRow, nv.selectedCol)
@@ -115,16 +136,16 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 
 		case '+':
 			nv.depth = helper.Clamp(nv.depth+1, 1, 10)
-			nv.vc.Draw()
+			nv.viewContext.Draw()
 
 		case '-':
 			nv.depth = helper.Clamp(nv.depth-1, 1, 10)
-			nv.vc.Draw()
+			nv.viewContext.Draw()
 
 		case 'r':
 			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
-			reserveView := NewReserveView(nv.vc, selectedSubnet.String())
-			nv.vc.ShowModal(reserveView)
+			reserveView := NewReserveView(nv.viewContext, selectedSubnet.String())
+			nv.viewContext.ShowModal(reserveView)
 
 		default:
 			// nothing
@@ -137,14 +158,14 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 		subnet := subnets[col*rows+row]
 		if ones, _ := subnet.Mask.Size(); ones < 32 {
 			subnetCIDR := subnet.String()
-			subnetView := NewNetworkView(nv.vc, subnetCIDR, nv.depth)
-			nv.vc.PushView(subnetView)
+			subnetView := NewNetworkView(nv.viewContext, subnetCIDR, nv.depth)
+			nv.viewContext.PushView(subnetView)
 		}
 	})
 
 	table.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyESC {
-			nv.vc.PopView()
+			nv.viewContext.PopView()
 		}
 	})
 

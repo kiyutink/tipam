@@ -2,30 +2,30 @@ package core
 
 import (
 	"fmt"
+	"net"
 )
 
 func (r *Runner) Reserve(cidr string, tags []string) error {
-	reservation, err := NewReservation(cidr, tags)
+	_, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return fmt.Errorf("error parsing cidr %v: %w", cidr, err)
 	}
-	allReservations, err := r.Persistor.ReadAll()
-	if err != nil {
-		return fmt.Errorf("error reading existing reservations: %w", err)
-	}
-	for _, existingReservation := range allReservations {
-		if !reservation.LiesWithinRangeOf(existingReservation) {
-			continue
-		}
+	newReservation := NewReservation(ipNet, tags)
 
-		if !reservation.IsValidSubreservationOf(existingReservation) {
-			return fmt.Errorf("the reservation is not a valid subreservation of reservation with CIDR=%v", existingReservation.IPNet.String())
-		}
+	state, err := r.Persistor.Read()
+	if err != nil {
+		return fmt.Errorf("error reading state: %w", err)
 	}
 
-	err = r.Persistor.Create(*reservation)
+	err = state.ValidateReservation(newReservation)
 	if err != nil {
-		return fmt.Errorf("error persisting reservation: %w", err)
+		return fmt.Errorf("the reservation is invalid: %w", err)
+	}
+
+	state.Reservations[cidr] = newReservation
+	err = r.Persistor.Persist(state)
+	if err != nil {
+		return fmt.Errorf("error writing state: %w", err)
 	}
 
 	return nil

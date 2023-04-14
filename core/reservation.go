@@ -8,19 +8,15 @@ type Reservation struct {
 }
 
 // NewReservationFromCIDR parses a given CIDR and returns a reservation. If the CIDR is invalid, returns an error
-func NewReservation(cidr string, tags []string) (*Reservation, error) {
-	_, ipNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return nil, err
-	}
-	return &Reservation{
+func NewReservation(ipNet *net.IPNet, tags []string) Reservation {
+	return Reservation{
 		IPNet: ipNet,
 		Tags:  tags,
-	}, nil
+	}
 }
 
 // LiesWithinRangeOf checks whether the reservation's CIDR range lies within the range of parent
-func (r *Reservation) LiesWithinRangeOf(parent Reservation) bool {
+func (r Reservation) LiesWithinRangeOf(parent Reservation) bool {
 	onesChild, _ := r.IPNet.Mask.Size()
 	onesParent, _ := parent.IPNet.Mask.Size()
 
@@ -38,7 +34,7 @@ func (r *Reservation) LiesWithinRangeOf(parent Reservation) bool {
 }
 
 // IsValidSubreservationOf checks whether the reservation has all the necessary tags to be a valid subreservation of parent
-func (r *Reservation) IsValidSubreservationOf(parent Reservation) bool {
+func (r Reservation) IsValidSubreservationOf(parent Reservation) bool {
 	// The subreservation must introduce at least one new tag.
 	if len(r.Tags) <= len(parent.Tags) {
 		return false

@@ -2,18 +2,20 @@ package tipam
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/kiyutink/tipam/core"
 	"github.com/rivo/tview"
 )
 
 type ReserveView struct {
-	viewContext ViewContext
+	viewContext *ViewContext
 	cidr        string
 }
 
-func NewReserveView(vc ViewContext, cidr string) *ReserveView {
+func NewReserveView(vc *ViewContext, cidr string) *ReserveView {
 	return &ReserveView{
 		viewContext: vc,
 		cidr:        cidr,
@@ -41,7 +43,10 @@ func (rv *ReserveView) Primitive() tview.Primitive {
 			fmt.Println(err)
 			return
 		}
-		rv.viewContext.Tags[rv.cidr] = tags
+		// We ignore the error because this cidr can't be malformed
+		_, ipNet, _ := net.ParseCIDR(rv.cidr)
+		res := core.NewReservation(ipNet, tags)
+		rv.viewContext.State.Reservations[rv.cidr] = res
 		rv.viewContext.HideModal()
 		rv.viewContext.Draw()
 	})

@@ -13,6 +13,7 @@ type ViewContext struct {
 	Pages     *tview.Pages
 	State     *core.State
 	Runner    *core.Runner
+	Meta      *tview.TextView
 }
 
 func (vc *ViewContext) PushView(view View) {
@@ -21,6 +22,7 @@ func (vc *ViewContext) PushView(view View) {
 	name := view.Name()
 
 	vc.Pages.AddAndSwitchToPage(name, p, true)
+	vc.Meta.SetText(view.Meta())
 	vc.Pages.SetTitle(vc.getBreadcrumbs())
 }
 
@@ -46,6 +48,7 @@ func (vc *ViewContext) Draw() {
 	top := vc.ViewStack.Top()
 	vc.Pages.AddAndSwitchToPage(top.Name(), top.Primitive(), true)
 	vc.Pages.SetTitle(vc.getBreadcrumbs())
+	vc.Meta.SetText(top.Meta())
 }
 
 func (vc *ViewContext) getBreadcrumbs() string {
@@ -54,5 +57,5 @@ func (vc *ViewContext) getBreadcrumbs() string {
 		viewNames = append(viewNames, view.Name())
 	}
 
-	return strings.Join(viewNames, "->")
+	return helper.AddModifier(strings.Join(viewNames, " ➜ "), "::b")
 }

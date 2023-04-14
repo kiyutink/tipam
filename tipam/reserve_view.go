@@ -26,6 +26,10 @@ func (rv *ReserveView) Name() string {
 	return ""
 }
 
+func (rv *ReserveView) Meta() string {
+	return ""
+}
+
 func (rv *ReserveView) Primitive() tview.Primitive {
 	tagsInputVal := ""
 

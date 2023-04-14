@@ -23,13 +23,17 @@ func (rv *ReleaseView) Name() string {
 	return ""
 }
 
+func (rv *ReleaseView) Meta() string {
+	return ""
+}
+
 func (rv *ReleaseView) Primitive() tview.Primitive {
 	grid := tview.NewGrid()
 	grid.SetRows(0, 0)
 
 	text := tview.NewTextView()
 	text.SetDynamicColors(true)
-	text.SetText(fmt.Sprintf("Are you sure you want to release the reservation with CIDR [yellow]%v[:yellow]?\n", rv.cidr))
+	text.SetText(fmt.Sprintf("Are you sure you want to release the reservation with CIDR [yellow]%v[-]?\n", rv.cidr))
 
 	form := tview.NewForm()
 
@@ -52,7 +56,7 @@ func (rv *ReleaseView) Primitive() tview.Primitive {
 	})
 
 	form.SetBorder(true)
-	form.AddTextView("", fmt.Sprintf("Are you sure you want to release reservation with CIDR [yellow]%v?[:yellow]", rv.cidr), 0, 2, true, false)
+	form.AddTextView("", fmt.Sprintf("Are you sure you want to release reservation with CIDR [yellow]%v?[-]", rv.cidr), 0, 2, true, false)
 
 	return newModal(form, 40, 10)
 }

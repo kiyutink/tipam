@@ -38,20 +38,29 @@ type NetworkView struct {
 	selectedCol int
 }
 
-func (nw *NetworkView) Name() string {
-	return nw.ipNet.String()
+func (nv *NetworkView) Name() string {
+	return nv.ipNet.String()
+}
+
+func (nv *NetworkView) Meta() string {
+	ones, _ := nv.ipNet.Mask.Size()
+	IPCount := 1 << (32 - ones)
+	text := fmt.Sprintf("Network : %v", nv.ipNet.String())
+	if tags, ok := nv.viewContext.State.Reservations[nv.ipNet.String()]; ok {
+		text += fmt.Sprintf("\nTags : %v", strings.Join(tags.Tags, "/"))
+	} else {
+		text += "\nUntagged"
+	}
+	text += fmt.Sprintf("\nSubnets shown : %v", 1<<nv.depth)
+	text += fmt.Sprintf("\nTotal IPs : %v", IPCount)
+
+	return helper.Columns(text, ":", "", "::b")
 }
 
 func NewNetworkView(vc *ViewContext, CIDR string, depth int) *NetworkView {
 	_, ipNet, err := net.ParseCIDR(CIDR)
 	if err != nil {
 		log.Fatalf("error parsing cidr \"%v\"", CIDR)
-	}
-
-	netMaskOnes, _ := ipNet.Mask.Size()
-
-	if netMaskOnes+depth > IPv4MaxBits {
-		depth = IPv4MaxBits - netMaskOnes // TODO: Maybe this logic shouldn't be here and the caller should make sure that the depth is not too much
 	}
 
 	return &NetworkView{
@@ -79,7 +88,7 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 				}
 			}
 
-			text += fmt.Sprintf(" ~ [grey]%v[:grey]", strings.Join(longestTagsRes.Tags, "/"))
+			text += fmt.Sprintf(" ~ [grey]%v[-]", strings.Join(longestTagsRes.Tags, "/"))
 		}
 	}
 
@@ -91,6 +100,10 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 
 func (nv *NetworkView) Primitive() tview.Primitive {
 	netMaskOnes, netMaskBits := nv.ipNet.Mask.Size()
+
+	if netMaskOnes+nv.depth > IPv4MaxBits {
+		nv.depth = IPv4MaxBits - netMaskOnes // TODO: Maybe this logic shouldn't be here and the caller should make sure that the depth is not too much
+	}
 
 	subnetCount := 1 << nv.depth
 	rows, cols := rowsAndCols(subnetCount)
@@ -179,7 +192,5 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 			nv.viewContext.PopView()
 		}
 	})
-
-	table.SetTitle(nv.ipNet.String())
 	return table
 }

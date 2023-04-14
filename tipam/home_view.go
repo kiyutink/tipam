@@ -15,7 +15,11 @@ type HomeView struct {
 }
 
 func (hv *HomeView) Name() string {
-	return "home"
+	return "🏠"
+}
+
+func (hv *HomeView) Meta() string {
+	return "Select a network to start"
 }
 
 func (hv *HomeView) Primitive() tview.Primitive {

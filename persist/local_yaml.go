@@ -36,18 +36,6 @@ func NewLocalYAMLPersistor(fileName string) *LocalYAMLPersistor {
 	return &LocalYAMLPersistor{fileName}
 }
 
-func (lyp *LocalYAMLPersistor) EnsureFileExists() error {
-	_, statErr := os.Stat(lyp.fileName)
-
-	if errors.Is(statErr, os.ErrNotExist) {
-		f, createErr := os.Create(lyp.fileName)
-		defer f.Close()
-		return createErr
-	}
-
-	return statErr
-}
-
 func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
 	file, err := os.OpenFile(lyp.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {

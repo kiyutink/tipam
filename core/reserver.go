@@ -12,6 +12,9 @@ func (r *Runner) Reserve(cidr string, tags []string) error {
 	}
 	newReservation := NewReservation(ipNet, tags)
 
+	r.Persistor.Lock()
+	defer r.Persistor.Unlock()
+
 	state, err := r.Persistor.Read()
 	if err != nil {
 		return fmt.Errorf("error reading state: %w", err)

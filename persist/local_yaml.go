@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/gofrs/flock"
 	"github.com/kiyutink/tipam/core"
 	"gopkg.in/yaml.v3"
 )
@@ -30,10 +31,11 @@ func newEmptyYAMLState() *YAMLState {
 
 type LocalYAMLPersistor struct {
 	fileName string
+	flock    *flock.Flock
 }
 
 func NewLocalYAMLPersistor(fileName string) *LocalYAMLPersistor {
-	return &LocalYAMLPersistor{fileName}
+	return &LocalYAMLPersistor{fileName: fileName, flock: flock.New(fileName)}
 }
 
 func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
@@ -95,4 +97,12 @@ func (lyp *LocalYAMLPersistor) Read() (*core.State, error) {
 	}
 
 	return state, nil
+}
+
+func (lyp *LocalYAMLPersistor) Lock() error {
+	return lyp.flock.Lock()
+}
+
+func (lyp *LocalYAMLPersistor) Unlock() error {
+	return lyp.flock.Unlock()
 }

@@ -9,6 +9,7 @@ import (
 func newReserveCmd() *cobra.Command {
 	var cidr string
 	var tags []string
+	var reserveFlags core.ReserveFlags
 
 	cmd := &cobra.Command{
 		Use:   "reserve",
@@ -20,12 +21,13 @@ func newReserveCmd() *cobra.Command {
 				return err
 			}
 			runner := core.NewRunner(p)
-			return runner.Reserve(cidr, tags)
+			return runner.Reserve(cidr, tags, reserveFlags)
 		},
 	}
 
 	cmd.Flags().StringVar(&cidr, "cidr", "", "The CIDR range of the reservation to be created")
 	cmd.Flags().StringSliceVar(&tags, "tag", []string{}, "The list of tags to attach to a reservation")
+	cmd.Flags().BoolVar(&reserveFlags.ComplySubs, "comply-subs", false, "Pass this flag to make subreservations comply with this reservation by prepending tags")
 
 	return cmd
 }

@@ -38,7 +38,7 @@ func TestReserve(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := tr.Reserve(tt.cidr, tt.tags)
+		err := tr.Reserve(tt.cidr, tt.tags, ReserveFlags{})
 		if tt.fails && err == nil {
 			t.Errorf("expected reservation to fail, but didn't")
 		}

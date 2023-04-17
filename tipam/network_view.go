@@ -78,7 +78,7 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 		text += fmt.Sprintf(" = %v", strings.Join(res.Tags, "/"))
 	} else {
 		newRes := core.NewReservation(subnet, nil)
-		parents := nv.viewContext.State.FindParentReservations(newRes)
+		parents := nv.viewContext.State.FindSupers(newRes)
 
 		if len(parents) > 0 {
 			longestTagsRes := parents[0]

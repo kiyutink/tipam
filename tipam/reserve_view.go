@@ -10,27 +10,27 @@ import (
 	"github.com/rivo/tview"
 )
 
-type ReserveView struct {
+type ClaimView struct {
 	viewContext *ViewContext
 	cidr        string
 }
 
-func NewReserveView(vc *ViewContext, cidr string) *ReserveView {
-	return &ReserveView{
+func NewClaimView(vc *ViewContext, cidr string) *ClaimView {
+	return &ClaimView{
 		viewContext: vc,
 		cidr:        cidr,
 	}
 }
 
-func (rv *ReserveView) Name() string {
+func (rv *ClaimView) Name() string {
 	return ""
 }
 
-func (rv *ReserveView) Meta() string {
+func (rv *ClaimView) Meta() string {
 	return ""
 }
 
-func (rv *ReserveView) Primitive() tview.Primitive {
+func (rv *ClaimView) Primitive() tview.Primitive {
 	tagsInputVal := ""
 
 	form := tview.NewForm()
@@ -40,22 +40,22 @@ func (rv *ReserveView) Primitive() tview.Primitive {
 	form.AddInputField("Tags (separated with /)", "", 0, nil, func(text string) {
 		tagsInputVal = text
 	})
-	form.AddButton("Reserve", func() {
+	form.AddButton("Claim", func() {
 		tags := strings.Split(tagsInputVal, "/")
-		// TODO: We shouldn't use the Reserve from runner, but implement the reserve function for the view, as we don't want to keep
-		// State in sync (reserve only modifies its local state)
+		// TODO: We shouldn't use the Claim from runner, but implement the claim function for the view, as we don't want to keep
+		// State in sync (claim only modifies its local state)
 		// Or maybe we should, I'm not sure yet. Still something to think about
-		err := rv.viewContext.Runner.Reserve(rv.cidr, tags, core.ReserveFlags{})
-		// TODO: Is this the best way to do this?
-		rv.viewContext.State, _ = rv.viewContext.Runner.Persistor.Read()
+		err := rv.viewContext.Runner.Claim(rv.cidr, tags, core.ClaimFlags{})
+		// TODO: Is this the best way to do this? Probably not?
+		rv.viewContext.State, _ = rv.viewContext.Runner.ReadState()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		// We ignore the error because this cidr can't be malformed
 		_, ipNet, _ := net.ParseCIDR(rv.cidr)
-		res := core.NewReservation(ipNet, tags)
-		rv.viewContext.State.Reservations[rv.cidr] = res
+		res := core.NewClaim(ipNet, tags)
+		rv.viewContext.State.Claims[rv.cidr] = res
 		rv.viewContext.HideModal()
 		rv.viewContext.Draw()
 	})

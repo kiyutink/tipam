@@ -6,18 +6,18 @@ import (
 	"testing"
 )
 
-func TestReserve(t *testing.T) {
+func TestClaim(t *testing.T) {
 	tr := Runner{
-		Persistor: &testPersistor{
+		persistor: &testPersistor{
 			testPersist: func(s *State) error {
 				return nil
 			},
 			testRead: func() (*State, error) {
 				cidr := "10.0.1.0/24"
 				_, ipNet, _ := net.ParseCIDR(cidr)
-				r := NewReservation(ipNet, []string{"test", "test_inner"})
+				r := NewClaim(ipNet, []string{"test", "test_inner"})
 				return &State{
-					Reservations: map[string]Reservation{
+					Claims: map[string]Claim{
 						cidr: r,
 					},
 				}, nil
@@ -38,13 +38,13 @@ func TestReserve(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := tr.Reserve(tt.cidr, tt.tags, ReserveFlags{})
+		err := tr.Claim(tt.cidr, tt.tags, ClaimFlags{})
 		if tt.fails && err == nil {
-			t.Errorf("expected reservation to fail, but didn't")
+			t.Errorf("expected claim to fail, but didn't")
 		}
 
 		if !tt.fails && err != nil {
-			t.Errorf("expected reservation to succeed, but didn't")
+			t.Errorf("expected claim to succeed, but didn't")
 		}
 	}
 

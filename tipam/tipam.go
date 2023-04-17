@@ -15,7 +15,7 @@ type Tipam struct {
 }
 
 const helpText = `<enter> - open
-<r> - reserve
+<c> - claim
 <d> - release
 <esc> - go back`
 
@@ -57,7 +57,7 @@ func InitTipam(runner *core.Runner) {
 
 	viewStack := helper.NewStack[View]()
 
-	state, err := runner.Persistor.Read()
+	state, err := runner.ReadState()
 	if err != nil {
 		panic(err)
 	}

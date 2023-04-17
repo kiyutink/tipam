@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	IPv4MaxBits  = 32
-	CIDRMaxChars = 18
+	ipv4MaxBits  = 32
+	cidrMaxChars = 18
 )
 
 func rowsAndCols(cells int) (int, int) {
@@ -46,7 +46,7 @@ func (nv *NetworkView) Meta() string {
 	ones, _ := nv.ipNet.Mask.Size()
 	IPCount := 1 << (32 - ones)
 	text := fmt.Sprintf("Network : %v", nv.ipNet.String())
-	if tags, ok := nv.viewContext.State.Reservations[nv.ipNet.String()]; ok {
+	if tags, ok := nv.viewContext.State.Claims[nv.ipNet.String()]; ok {
 		text += fmt.Sprintf("\nTags : %v", strings.Join(tags.Tags, "/"))
 	} else {
 		text += "\nUntagged"
@@ -74,15 +74,15 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 	subnetCidr := subnet.String()
 	text := subnetCidr
 	text = helper.PadRight(text, colWidth-len(text))
-	if res, ok := nv.viewContext.State.Reservations[subnetCidr]; ok {
+	if res, ok := nv.viewContext.State.Claims[subnetCidr]; ok {
 		text += fmt.Sprintf(" = %v", strings.Join(res.Tags, "/"))
 	} else {
-		newRes := core.NewReservation(subnet, nil)
-		parents := nv.viewContext.State.FindSupers(newRes)
+		newRes := core.NewClaim(subnet, nil)
+		supers := nv.viewContext.State.FindSupers(newRes)
 
-		if len(parents) > 0 {
-			longestTagsRes := parents[0]
-			for _, p := range parents {
+		if len(supers) > 0 {
+			longestTagsRes := supers[0]
+			for _, p := range supers {
 				if len(p.Tags) > len(longestTagsRes.Tags) {
 					longestTagsRes = p
 				}
@@ -101,8 +101,8 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 func (nv *NetworkView) Primitive() tview.Primitive {
 	netMaskOnes, netMaskBits := nv.ipNet.Mask.Size()
 
-	if netMaskOnes+nv.depth > IPv4MaxBits {
-		nv.depth = IPv4MaxBits - netMaskOnes // TODO: Maybe this logic shouldn't be here and the caller should make sure that the depth is not too much
+	if netMaskOnes+nv.depth > ipv4MaxBits {
+		nv.depth = ipv4MaxBits - netMaskOnes // TODO: Maybe this logic shouldn't be here and the caller should make sure that the depth is not too much
 	}
 
 	subnetCount := 1 << nv.depth
@@ -155,17 +155,17 @@ func (nv *NetworkView) Primitive() tview.Primitive {
 			nv.depth = helper.Clamp(nv.depth-1, 1, 10)
 			nv.viewContext.Draw()
 
-		case 'r':
+		case 'c':
 			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
-			if _, ok := nv.viewContext.State.Reservations[selectedSubnet.String()]; ok {
+			if _, ok := nv.viewContext.State.Claims[selectedSubnet.String()]; ok {
 				break
 			}
-			reserveView := NewReserveView(nv.viewContext, selectedSubnet.String())
-			nv.viewContext.ShowModal(reserveView)
+			claimView := NewClaimView(nv.viewContext, selectedSubnet.String())
+			nv.viewContext.ShowModal(claimView)
 
 		case 'd':
 			selectedSubnet := subnets[nv.selectedCol*rows+nv.selectedRow]
-			if _, ok := nv.viewContext.State.Reservations[selectedSubnet.String()]; !ok {
+			if _, ok := nv.viewContext.State.Claims[selectedSubnet.String()]; !ok {
 				break
 			}
 			releaseView := NewReleaseView(nv.viewContext, selectedSubnet.String())

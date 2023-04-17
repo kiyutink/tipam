@@ -11,34 +11,39 @@ import (
 )
 
 const (
-	DEFAULT_YAML_STATE_API_VERSION = 1
-	PersistorLocalYaml             = "localyaml"
+	defaultYAMLStateAPIVersion = 1
 )
 
-type YAMLState struct {
-	APIVersion   int                 `yaml:"apiVersion"`
-	Reservations map[string][]string `yaml:"reservations,omitempty"`
-	Claims       map[string][]string `yaml:"claims,omitempty"`
+type yamlStateClaim struct {
+	Tags  []string `yaml:"tags"`
+	Final bool     `yaml:"final,omitempty"`
 }
 
-func newEmptyYAMLState() *YAMLState {
-	return &YAMLState{
-		APIVersion:   DEFAULT_YAML_STATE_API_VERSION,
-		Reservations: map[string][]string{},
-		Claims:       map[string][]string{},
+type yamlState struct {
+	APIVersion int                       `yaml:"apiVersion"`
+	Claims     map[string]yamlStateClaim `yaml:"claims,omitempty"`
+}
+
+func newEmptyYAMLState() *yamlState {
+	return &yamlState{
+		APIVersion: defaultYAMLStateAPIVersion,
+		Claims:     map[string]yamlStateClaim{},
 	}
 }
 
-type LocalYAMLPersistor struct {
+type LocalYAML struct {
 	fileName string
 	flock    *flock.Flock
 }
 
-func NewLocalYAMLPersistor(fileName string) *LocalYAMLPersistor {
-	return &LocalYAMLPersistor{fileName: fileName, flock: flock.New(fileName)}
+func NewLocalYAML(fileName string) *LocalYAML {
+	return &LocalYAML{
+		fileName: fileName,
+		flock:    flock.New(fileName),
+	}
 }
 
-func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
+func (lyp *LocalYAML) Persist(s *core.State) error {
 	file, err := os.OpenFile(lyp.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
@@ -47,12 +52,9 @@ func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
 
 	yamlState := newEmptyYAMLState()
 
-	for cidr, r := range s.Reservations {
-		yamlState.Reservations[cidr] = r.Tags
+	for cidr, r := range s.Claims {
+		yamlState.Claims[cidr] = yamlStateClaim{Tags: r.Tags, Final: r.Final}
 	}
-
-	// for cidr, c := range s.Claims {
-	// }
 
 	encoder := yaml.NewEncoder(file)
 	encoder.SetIndent(2)
@@ -62,7 +64,7 @@ func (lyp *LocalYAMLPersistor) Persist(s *core.State) error {
 	return err
 }
 
-func (lyp *LocalYAMLPersistor) Read() (*core.State, error) {
+func (lyp *LocalYAML) Read() (*core.State, error) {
 	bytes, err := os.ReadFile(lyp.fileName)
 
 	switch {
@@ -84,25 +86,25 @@ func (lyp *LocalYAMLPersistor) Read() (*core.State, error) {
 	}
 
 	state := &core.State{
-		Reservations: map[string]core.Reservation{},
+		Claims: map[string]core.Claim{},
 	}
 
-	for c, tags := range yamlState.Reservations {
+	for c, claim := range yamlState.Claims {
 		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
 			return nil, err
 		}
-		r := core.NewReservation(ipNet, tags)
-		state.Reservations[c] = r
+		r := core.NewClaim(ipNet, claim.Tags)
+		state.Claims[c] = r
 	}
 
 	return state, nil
 }
 
-func (lyp *LocalYAMLPersistor) Lock() error {
+func (lyp *LocalYAML) Lock() error {
 	return lyp.flock.Lock()
 }
 
-func (lyp *LocalYAMLPersistor) Unlock() error {
+func (lyp *LocalYAML) Unlock() error {
 	return lyp.flock.Unlock()
 }

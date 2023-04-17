@@ -8,11 +8,36 @@ type Persistor interface {
 }
 
 type Runner struct {
-	Persistor Persistor
+	persistor Persistor
+	doLock    bool
 }
 
-func NewRunner(p Persistor) *Runner {
-	return &Runner{
-		Persistor: p,
+type RunnerOpts struct {
+	// DoLock specifies whether to use persistor's locks
+	// when operating on the state
+	DoLock bool
+}
+
+func NewRunner(p Persistor, opts *RunnerOpts) *Runner {
+	r := &Runner{
+		persistor: p,
 	}
+
+	if opts == nil {
+		return r
+	}
+
+	if opts.DoLock {
+		opts.DoLock = true
+	}
+
+	return r
+}
+
+func (r *Runner) ReadState() (*State, error) {
+	return r.persistor.Read()
+}
+
+func (r *Runner) PersistState(state *State) error {
+	return r.persistor.Persist(state)
 }

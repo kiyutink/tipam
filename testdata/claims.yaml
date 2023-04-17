@@ -1,0 +1,18 @@
+apiVersion: 1
+claims:
+  10.0.0.2/15:
+    tags:
+      - production
+      - database
+      - postgres
+  10.0.0.1/15:
+    tags:
+      - production
+      - database
+      - postgres
+    final: true
+  10.0.0.3/15:
+    tags:
+      - production
+      - database
+      - postgres

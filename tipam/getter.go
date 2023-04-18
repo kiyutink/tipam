@@ -1,9 +1,17 @@
 package tipam
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 func (r *Runner) Get(cidr string) error {
-	err := r.persistor.Lock()
+	_, _, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return err
+	}
+
+	err = r.persistor.Lock()
 	if err != nil {
 		return err
 	}

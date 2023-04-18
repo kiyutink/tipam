@@ -8,6 +8,7 @@ type runnerFlags struct {
 
 var runnerF = runnerFlags{}
 
+// newRunner returns a new *tipam.Runner with runnerFlags passed in as options
 func newRunner(p tipam.Persistor) *tipam.Runner {
 	opts := []tipam.RunnerOption{}
 

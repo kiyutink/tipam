@@ -5,13 +5,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type claimFlags struct {
-	complySubs bool
-}
-
 func newClaimCmd() *cobra.Command {
-	var cidr string
-	var tags []string
+	type claimFlags struct {
+		// Required flags
+		cidr string
+		tags []string
+
+		// Optional flags
+		complySubs bool
+	}
+
 	var claimF claimFlags
 
 	cmd := &cobra.Command{
@@ -26,16 +29,22 @@ func newClaimCmd() *cobra.Command {
 
 			runner := newRunner(p)
 
+			// Transform optional flags into ClaimOptions
 			opts := []tipam.ClaimOption{}
 			if claimF.complySubs {
 				opts = append(opts, tipam.WithComplySubs(true))
 			}
-			return runner.Claim(cidr, tags, opts...)
+
+			return runner.Claim(claimF.cidr, claimF.tags, opts...)
 		},
 	}
 
-	cmd.Flags().StringVar(&cidr, "cidr", "", "the CIDR range of the claim to be created")
-	cmd.Flags().StringSliceVar(&tags, "tag", []string{}, "the list of tags attach to created claim; multiple instances of this flag can be passed to attach multiple flags")
+	cmd.Flags().StringVar(&claimF.cidr, "cidr", "", "the CIDR range of the claim to be created")
+	cmd.MarkFlagRequired("cidr")
+
+	cmd.Flags().StringSliceVar(&claimF.tags, "tag", []string{}, "the list of tags attach to created claim; multiple instances of this flag can be passed to attach multiple flags")
+	cmd.MarkFlagRequired("tag")
+
 	cmd.Flags().BoolVar(&claimF.complySubs, "comply-subs", false, "pass this flag to make subclaims comply with this claim by prepending tags")
 
 	return cmd

@@ -1,18 +1,18 @@
-package tipam
+package visual
 
 import (
 	"strings"
 
-	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
+	"github.com/kiyutink/tipam/tipam"
 	"github.com/rivo/tview"
 )
 
 type ViewContext struct {
 	ViewStack *helper.Stack[View]
 	Pages     *tview.Pages
-	State     *core.State
-	Runner    *core.Runner
+	State     *tipam.State
+	Runner    *tipam.Runner
 	Meta      *tview.TextView
 }
 

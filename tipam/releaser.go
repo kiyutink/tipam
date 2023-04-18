@@ -1,4 +1,4 @@
-package core
+package tipam
 
 func (r *Runner) Release(cidr string) error {
 	state, err := r.persistor.Read()

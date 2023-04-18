@@ -1,4 +1,4 @@
-package tipam
+package visual
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 
 	gocidr "github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gdamore/tcell/v2"
-	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/helper"
+	"github.com/kiyutink/tipam/tipam"
 	"github.com/rivo/tview"
 )
 
@@ -77,7 +77,7 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 	if res, ok := nv.viewContext.State.Claims[subnetCidr]; ok {
 		text += fmt.Sprintf(" = %v", strings.Join(res.Tags, "/"))
 	} else {
-		newRes := core.NewClaim(subnet, nil)
+		newRes := tipam.NewClaim(subnet, nil)
 		supers := nv.viewContext.State.FindSupers(newRes)
 
 		if len(supers) > 0 {

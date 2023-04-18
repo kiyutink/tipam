@@ -1,4 +1,4 @@
-package core
+package tipam
 
 type testPersistor struct {
 	Persistor

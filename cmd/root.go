@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/internal/visual"
 	"github.com/kiyutink/tipam/tipam"
 	"github.com/spf13/cobra"
 )
@@ -15,14 +15,18 @@ func NewRootCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			runner := core.NewRunner(p, nil)
-			tipam.InitTipam(runner)
+			runner := tipam.NewRunner(p, nil)
+			visual.InitTipam(runner)
 			return nil
 		},
 	}
 
+	// Flags used by the persistor
 	rootCmd.PersistentFlags().StringVar(&persistF.persistorType, "persist", "localyaml", "Which persistor to use. Only 'localyaml' is available at the time, which is also the default value")
 	rootCmd.PersistentFlags().StringVar(&persistF.localYAMLFileName, "filename", "tipam.yaml", "The filename for the 'localyaml' persistor. Defaults to 'tipam.yaml'")
+
+	// Flags mapped into runner options
+	rootCmd.PersistentFlags().BoolVar(&runnerOpts.DoLock, "do-lock", false, "Whether or not use state locking. Defaults to false")
 
 	rootCmd.AddCommand(newClaimCmd())
 	rootCmd.AddCommand(newReleaseCmd())

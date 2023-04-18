@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/kiyutink/tipam/core"
 	"github.com/kiyutink/tipam/persist"
+	"github.com/kiyutink/tipam/tipam"
 )
 
 const persistorLocalYAML = "localyaml"
@@ -17,7 +17,7 @@ type persistFlags struct {
 
 var persistF = persistFlags{}
 
-func newPersistor() (core.Persistor, error) {
+func newPersistor() (tipam.Persistor, error) {
 	switch persistF.persistorType {
 	case persistorLocalYAML:
 		p := persist.NewLocalYAML(persistF.localYAMLFileName)

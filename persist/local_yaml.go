@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/gofrs/flock"
-	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/tipam"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,7 +43,7 @@ func NewLocalYAML(fileName string) *LocalYAML {
 	}
 }
 
-func (lyp *LocalYAML) Persist(s *core.State) error {
+func (lyp *LocalYAML) Persist(s *tipam.State) error {
 	file, err := os.OpenFile(lyp.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (lyp *LocalYAML) Persist(s *core.State) error {
 	return err
 }
 
-func (lyp *LocalYAML) Read() (*core.State, error) {
+func (lyp *LocalYAML) Read() (*tipam.State, error) {
 	bytes, err := os.ReadFile(lyp.fileName)
 
 	switch {
@@ -85,8 +85,8 @@ func (lyp *LocalYAML) Read() (*core.State, error) {
 		return nil, err
 	}
 
-	state := &core.State{
-		Claims: map[string]core.Claim{},
+	state := &tipam.State{
+		Claims: map[string]tipam.Claim{},
 	}
 
 	for c, claim := range yamlState.Claims {
@@ -94,7 +94,7 @@ func (lyp *LocalYAML) Read() (*core.State, error) {
 		if err != nil {
 			return nil, err
 		}
-		r := core.NewClaim(ipNet, claim.Tags)
+		r := tipam.NewClaim(ipNet, claim.Tags)
 		state.Claims[c] = r
 	}
 

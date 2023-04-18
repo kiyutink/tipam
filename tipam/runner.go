@@ -1,4 +1,4 @@
-package core
+package tipam
 
 type Persistor interface {
 	Persist(*State) error
@@ -8,8 +8,8 @@ type Persistor interface {
 }
 
 type Runner struct {
-	persistor Persistor
-	doLock    bool
+	persistor  Persistor
+	doLock     bool
 }
 
 type RunnerOpts struct {

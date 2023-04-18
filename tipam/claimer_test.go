@@ -1,4 +1,4 @@
-package core
+package tipam
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func TestClaim(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := tr.Claim(tt.cidr, tt.tags, ClaimFlags{})
+		err := tr.Claim(tt.cidr, tt.tags)
 		if tt.fails && err == nil {
 			t.Errorf("expected claim to fail, but didn't")
 		}

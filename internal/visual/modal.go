@@ -1,4 +1,4 @@
-package tipam
+package visual
 
 import "github.com/rivo/tview"
 

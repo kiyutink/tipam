@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/tipam"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ func newReleaseCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			runner := core.NewRunner(p, nil)
+			runner := tipam.NewRunner(p, nil)
 			return runner.Release(cidr)
 		},
 	}

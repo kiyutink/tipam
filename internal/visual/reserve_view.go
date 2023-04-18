@@ -1,4 +1,4 @@
-package tipam
+package visual
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/kiyutink/tipam/core"
+	"github.com/kiyutink/tipam/tipam"
 	"github.com/rivo/tview"
 )
 
@@ -45,7 +45,7 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 		// TODO: We shouldn't use the Claim from runner, but implement the claim function for the view, as we don't want to keep
 		// State in sync (claim only modifies its local state)
 		// Or maybe we should, I'm not sure yet. Still something to think about
-		err := rv.viewContext.Runner.Claim(rv.cidr, tags, core.ClaimFlags{})
+		err := rv.viewContext.Runner.Claim(rv.cidr, tags)
 		// TODO: Is this the best way to do this? Probably not?
 		rv.viewContext.State, _ = rv.viewContext.Runner.ReadState()
 		if err != nil {
@@ -54,7 +54,7 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 		}
 		// We ignore the error because this cidr can't be malformed
 		_, ipNet, _ := net.ParseCIDR(rv.cidr)
-		res := core.NewClaim(ipNet, tags)
+		res := tipam.NewClaim(ipNet, tags)
 		rv.viewContext.State.Claims[rv.cidr] = res
 		rv.viewContext.HideModal()
 		rv.viewContext.Draw()

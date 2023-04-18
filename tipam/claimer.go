@@ -1,18 +1,26 @@
-package core
+package tipam
 
 import (
 	"fmt"
 	"net"
 )
 
-type ClaimFlags struct {
-	// If ComplySubs is set to true, subclaims of the newly created claim
-	// will be made comply with the newly-created claim by prepending their
-	// taglists with the tags of the new claim
-	ComplySubs bool
+type claimParams struct {
+	complySubs bool
+}
+type ClaimOption func(*claimParams)
+
+func WithComplySubs(v bool) ClaimOption {
+	return func(opts *claimParams) {
+		opts.complySubs = true
+	}
 }
 
-func (r *Runner) Claim(cidr string, tags []string, flags ClaimFlags) error {
+func (r *Runner) Claim(cidr string, tags []string, o ...ClaimOption) error {
+	params := &claimParams{}
+	for _, opt := range o {
+		opt(params)
+	}
 	_, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return fmt.Errorf("error parsing cidr %v: %w", cidr, err)
@@ -32,7 +40,7 @@ func (r *Runner) Claim(cidr string, tags []string, flags ClaimFlags) error {
 	subs, supers := state.FindRelated(newClaim)
 
 	err = ValidateOnSupers(newClaim, supers)
-	if flags.ComplySubs {
+	if params.complySubs {
 		for _, sub := range subs {
 			tags = append([]string{}, newClaim.Tags...)
 			tags = append(tags, sub.Tags...)

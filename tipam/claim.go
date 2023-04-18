@@ -22,7 +22,7 @@ func (c Claim) LiesWithinRangeOf(super Claim) bool {
 	onesSuper, _ := super.IPNet.Mask.Size()
 
 	// The subnet's mask should be longer, constituting a smaller CIDR range
-	if onesSub < onesSuper {
+	if onesSub <= onesSuper {
 		return false
 	}
 

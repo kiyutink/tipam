@@ -54,6 +54,10 @@ func (r *Runner) Claim(cidr string, tags []string, opts ...ClaimOption) error {
 
 	err = ValidateOnSupers(newClaim, supers)
 
+	if err != nil {
+		return err
+	}
+
 	if params.complySubs {
 		for _, sub := range subs {
 			tags = append([]string{}, newClaim.Tags...)

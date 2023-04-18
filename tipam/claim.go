@@ -16,17 +16,17 @@ func NewClaim(ipNet *net.IPNet, tags []string) Claim {
 	}
 }
 
-// LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of parent
+// LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of the supernet
 func (c Claim) LiesWithinRangeOf(super Claim) bool {
 	onesSub, _ := c.IPNet.Mask.Size()
 	onesSuper, _ := super.IPNet.Mask.Size()
 
-	// The child block's mask should be longer, constituting a smaller CIDR range
+	// The subnet's mask should be longer, constituting a smaller CIDR range
 	if onesSub < onesSuper {
 		return false
 	}
 
-	// The child resrevation's network address must lie within the super's CIDR range
+	// The subnet's network address must lie within the supernet's CIDR range
 	if !super.IPNet.Contains(c.IPNet.IP) {
 		return false
 	}
@@ -41,7 +41,7 @@ func (r Claim) IsValidSubclaimOf(super Claim) bool {
 		return false
 	}
 
-	// The subclaim must have all the tags that the "parent" claim has. The tags have to be in the same order
+	// The subclaim must have all the tags that the superclaim has. The tags have to be in the same order
 	for i := range super.Tags {
 		if super.Tags[i] != r.Tags[i] {
 			return false

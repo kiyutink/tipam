@@ -23,7 +23,9 @@ func newClaimCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			runner := tipam.NewRunner(p, nil)
+
+			runner := newRunner(p)
+
 			opts := []tipam.ClaimOption{}
 			if claimF.complySubs {
 				opts = append(opts, tipam.WithComplySubs(true))
@@ -32,9 +34,9 @@ func newClaimCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&cidr, "cidr", "", "The CIDR range of the claim to be created")
-	cmd.Flags().StringSliceVar(&tags, "tag", []string{}, "The list of tags to attach to a claim")
-	cmd.Flags().BoolVar(&claimF.complySubs, "comply-subs", false, "Pass this flag to make subclaims comply with this claim by prepending tags")
+	cmd.Flags().StringVar(&cidr, "cidr", "", "the CIDR range of the claim to be created")
+	cmd.Flags().StringSliceVar(&tags, "tag", []string{}, "the list of tags attach to created claim; multiple instances of this flag can be passed to attach multiple flags")
+	cmd.Flags().BoolVar(&claimF.complySubs, "comply-subs", false, "pass this flag to make subclaims comply with this claim by prepending tags")
 
 	return cmd
 }

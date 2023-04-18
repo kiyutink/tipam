@@ -10,7 +10,7 @@ import (
 const persistorLocalYAML = "localyaml"
 
 type persistFlags struct {
-	persistorType string
+	persistor string
 
 	localYAMLFileName string
 }
@@ -18,10 +18,10 @@ type persistFlags struct {
 var persistF = persistFlags{}
 
 func newPersistor() (tipam.Persistor, error) {
-	switch persistF.persistorType {
+	switch persistF.persistor {
 	case persistorLocalYAML:
 		p := persist.NewLocalYAML(persistF.localYAMLFileName)
 		return p, nil
 	}
-	return nil, fmt.Errorf("unknown persistor type %v", persistF.persistorType)
+	return nil, fmt.Errorf("unknown persistor type %v", persistF.persistor)
 }

@@ -8,28 +8,38 @@ type Persistor interface {
 }
 
 type Runner struct {
-	persistor  Persistor
-	doLock     bool
+	persistor Persistor
+	doLock    bool
 }
 
-type RunnerOpts struct {
-	// DoLock specifies whether to use persistor's locks
+type runnerParams struct {
+	// doLock specifies whether to use persistor's locks
 	// when operating on the state
-	DoLock bool
+	doLock bool
 }
 
-func NewRunner(p Persistor, opts *RunnerOpts) *Runner {
+type RunnerOption func(*runnerParams)
+
+func WithLocking(do bool) RunnerOption {
+	return func(rp *runnerParams) {
+		rp.doLock = do
+	}
+}
+
+func NewRunner(p Persistor, opts ...RunnerOption) *Runner {
 	r := &Runner{
 		persistor: p,
 	}
 
-	if opts == nil {
-		return r
+	params := &runnerParams{
+		doLock: true,
 	}
 
-	if opts.DoLock {
-		opts.DoLock = true
+	for _, opt := range opts {
+		opt(params)
 	}
+
+	r.doLock = params.doLock
 
 	return r
 }

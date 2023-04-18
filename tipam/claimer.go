@@ -1,6 +1,7 @@
 package tipam
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -16,15 +17,23 @@ func WithComplySubs(v bool) ClaimOption {
 	}
 }
 
-func (r *Runner) Claim(cidr string, tags []string, o ...ClaimOption) error {
-	params := &claimParams{}
-	for _, opt := range o {
+func (r *Runner) Claim(cidr string, tags []string, opts ...ClaimOption) error {
+	params := &claimParams{
+		complySubs: false,
+	}
+	for _, opt := range opts {
 		opt(params)
 	}
+
 	_, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return fmt.Errorf("error parsing cidr %v: %w", cidr, err)
 	}
+
+	if len(tags) < 1 {
+		return fmt.Errorf("at least one tag has to be provided")
+	}
+
 	newClaim := NewClaim(ipNet, tags)
 
 	if r.doLock {
@@ -37,9 +46,14 @@ func (r *Runner) Claim(cidr string, tags []string, o ...ClaimOption) error {
 		return fmt.Errorf("error reading state: %w", err)
 	}
 
+	if _, ok := state.Claims[newClaim.IPNet.String()]; ok {
+		return errors.New("a claim for this CIDR already exists")
+	}
+
 	subs, supers := state.FindRelated(newClaim)
 
 	err = ValidateOnSupers(newClaim, supers)
+
 	if params.complySubs {
 		for _, sub := range subs {
 			tags = append([]string{}, newClaim.Tags...)

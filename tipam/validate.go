@@ -14,7 +14,7 @@ func ValidateOnSubs(c Claim, subs []Claim) error {
 	return nil
 }
 
-// ValidateOnSupers validates (duh) claim r against a list of superresrevations.
+// ValidateOnSupers validates (duh) claim r against a list of superclaims
 // The claim r should have all the tags that the longest super has
 // and introduce at least one new tag
 func ValidateOnSupers(c Claim, supers []Claim) error {

@@ -85,9 +85,7 @@ func (lyp *LocalYAML) Read() (*tipam.State, error) {
 		return nil, err
 	}
 
-	state := &tipam.State{
-		Claims: map[string]tipam.Claim{},
-	}
+	state := tipam.NewState()
 
 	for c, claim := range yamlState.Claims {
 		_, ipNet, err := net.ParseCIDR(c)

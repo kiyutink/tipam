@@ -1,49 +1,33 @@
 package tipam
 
-import (
-	"net"
-)
-
 type testPersistor struct {
-	Persistor
-	testPersist func(*State) error
-	testRead    func() (*State, error)
-	testLock    func() error
-	testUnlock  func() error
+	didLock   bool
+	didUnlock bool
+	state     *State
 }
 
 func (tp *testPersistor) Persist(s *State) error {
-	return tp.testPersist(s)
+	tp.state = s
+	return nil
 }
 
 func (tp *testPersistor) Read() (*State, error) {
-	return tp.testRead()
+	return tp.state, nil
 }
 
 func (tp *testPersistor) Lock() error {
-	return tp.testLock()
+	tp.didLock = true
+	return nil
 }
 
 func (tp *testPersistor) Unlock() error {
-	return tp.testUnlock()
+	tp.didUnlock = true
+	return nil
 }
 
-func newTestPersistor() *testPersistor {
+func newTestPersistor(state *State) *testPersistor {
 	tp := &testPersistor{
-		testPersist: func(s *State) error {
-			return nil
-		},
-		testRead: func() (*State, error) {
-			cidr := "10.0.1.0/24"
-			_, ipNet, _ := net.ParseCIDR(cidr)
-			c := NewClaim(ipNet, []string{"test", "test_inner"}, false)
-
-			return &State{
-				Claims: map[string]Claim{
-					cidr: c,
-				},
-			}, nil
-		},
+		state: state,
 	}
 	return tp
 }

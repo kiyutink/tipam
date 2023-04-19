@@ -10,6 +10,15 @@ func NewState() *State {
 	}
 }
 
+func NewStateWithClaims(claims []Claim) *State {
+	state := NewState()
+	for _, c := range claims {
+		state.Claims[c.IPNet.String()] = c
+	}
+
+	return state
+}
+
 // FindRelated returns all the related Claims as subs, supers
 func (s *State) FindRelated(cl Claim) ([]Claim, []Claim) {
 	subs, supers := []Claim{}, []Claim{}

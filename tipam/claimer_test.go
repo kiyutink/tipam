@@ -22,8 +22,11 @@ func TestClaimValidates(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		existingClaim := MustParseClaimFromCIDR("10.0.1.0/24", []string{"test", "test_inner"}, false)
+		state := NewStateWithClaims([]Claim{existingClaim})
+
 		tr := Runner{
-			persistor: newTestPersistor(),
+			persistor: newTestPersistor(state),
 		}
 
 		err := tr.Claim(tc.cidr, tc.tags, false, ClaimOpts{})
@@ -47,31 +50,67 @@ func TestClaimLocksState(t *testing.T) {
 		{false, "expected not to use locking, but did"},
 	}
 	for _, tc := range testCases {
-		didLock := false
-		didUnlock := false
-
-		tp := newTestPersistor()
-		tp.testLock = func() error { didLock = true; return nil }
-		tp.testUnlock = func() error { didUnlock = true; return nil }
-
+		tp := newTestPersistor(NewState())
 		tr := NewRunner(tp, RunnerOpts{DoLock: tc.doLock})
 
 		tr.Claim("172.16.0.0/12", []string{"test"}, false, ClaimOpts{})
 
-		if didLock && !didUnlock {
+		if tp.didLock && !tp.didUnlock {
 			t.Errorf("state locked but not unlocked")
 		}
 
-		if !didLock && didUnlock {
+		if !tp.didLock && tp.didUnlock {
 			t.Errorf("state not locked, but tried to unlock")
 		}
 
-		if tc.doLock != didLock {
+		if tc.doLock != tp.didLock {
 			t.Error(tc.errorMsg)
 		}
 	}
 }
 
+func TestClaimFailsSubclaimsOfFinal(t *testing.T) {
+	existingClaim := MustParseClaimFromCIDR("10.0.1.0/24", []string{"test1"}, true)
+	state := NewStateWithClaims([]Claim{existingClaim})
+	tr := Runner{persistor: newTestPersistor(state)}
+
+	err := tr.Claim("10.0.1.0/30", []string{"test", "test_inner"}, false, ClaimOpts{})
+
+	if err == nil {
+		t.Errorf("expected to fail when creating a subclaim of a final claim, but succeeded")
+	}
+}
+
 func TestClaimComplySubs(t *testing.T) {
-	// TODO:
+	existingClaims := []Claim{
+		MustParseClaimFromCIDR("10.0.1.0/24", []string{"test1"}, true),
+		MustParseClaimFromCIDR("10.0.2.0/24", []string{"test2"}, true),
+	}
+
+	testCases := []struct {
+		final    bool
+		succeeds bool
+	}{
+		{true, false},
+		{false, true},
+	}
+
+	for _, tc := range testCases {
+		state := NewStateWithClaims(existingClaims)
+		tr := Runner{persistor: newTestPersistor(state)}
+
+		err := tr.Claim("10.0.0.0/16", []string{"test_outer"}, tc.final, ClaimOpts{ComplySubs: true})
+
+		if err == nil && !tc.succeeds {
+			t.Errorf("expected to fail creating a superclaim marked as final, but succeeded")
+		}
+
+		if err != nil && tc.succeeds {
+			t.Errorf("expected to succeed creating a superclaim marked as final, but failed")
+		}
+
+		if tc.succeeds && len(state.Claims["10.0.1.0/24"].Tags) != 2 {
+			t.Errorf("expected claim with complySubs to prepend new tags to subclaims, but didn't")
+		}
+	}
 }

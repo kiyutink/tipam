@@ -45,6 +45,9 @@ func (r *Runner) Claim(cidr string, tags []string, final bool, opts ClaimOpts) e
 	}
 
 	if opts.ComplySubs {
+		if final {
+			err = errors.New("can't create a final superclaim")
+		}
 		for _, sub := range subs {
 			tags = append([]string{}, newClaim.Tags...)
 			tags = append(tags, sub.Tags...)

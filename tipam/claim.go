@@ -48,6 +48,11 @@ func (r Claim) IsValidSubclaimOf(super Claim) bool {
 		return false
 	}
 
+	// You can't create a subclaim of a final claim
+	if super.Final {
+		return false
+	}
+
 	// The subclaim must have all the tags that the superclaim has. The tags have to be in the same order
 	for i := range super.Tags {
 		if super.Tags[i] != r.Tags[i] {

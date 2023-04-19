@@ -6,25 +6,11 @@ import (
 	"net"
 )
 
-type claimParams struct {
-	complySubs bool
-}
-type ClaimOption func(*claimParams)
-
-func WithComplySubs(v bool) ClaimOption {
-	return func(opts *claimParams) {
-		opts.complySubs = true
-	}
+type ClaimOpts struct {
+	ComplySubs bool
 }
 
-func (r *Runner) Claim(cidr string, tags []string, opts ...ClaimOption) error {
-	params := &claimParams{
-		complySubs: false,
-	}
-	for _, opt := range opts {
-		opt(params)
-	}
-
+func (r *Runner) Claim(cidr string, tags []string, final bool, opts ClaimOpts) error {
 	_, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return fmt.Errorf("error parsing cidr %v: %w", cidr, err)
@@ -34,7 +20,7 @@ func (r *Runner) Claim(cidr string, tags []string, opts ...ClaimOption) error {
 		return fmt.Errorf("at least one tag has to be provided")
 	}
 
-	newClaim := NewClaim(ipNet, tags)
+	newClaim := NewClaim(ipNet, tags, final)
 
 	if r.doLock {
 		r.persistor.Lock()
@@ -58,7 +44,7 @@ func (r *Runner) Claim(cidr string, tags []string, opts ...ClaimOption) error {
 		return err
 	}
 
-	if params.complySubs {
+	if opts.ComplySubs {
 		for _, sub := range subs {
 			tags = append([]string{}, newClaim.Tags...)
 			tags = append(tags, sub.Tags...)

@@ -26,7 +26,7 @@ func TestClaimValidates(t *testing.T) {
 			persistor: newTestPersistor(),
 		}
 
-		err := tr.Claim(tc.cidr, tc.tags)
+		err := tr.Claim(tc.cidr, tc.tags, false, ClaimOpts{})
 
 		if tc.shouldFail && err == nil {
 			t.Errorf("expected claim with CIDR %v and tags %v to fail, but didn't: %v", tc.cidr, tc.tags, tc.errorMsg)
@@ -54,9 +54,9 @@ func TestClaimLocksState(t *testing.T) {
 		tp.testLock = func() error { didLock = true; return nil }
 		tp.testUnlock = func() error { didUnlock = true; return nil }
 
-		tr := NewRunner(tp, WithLocking(tc.doLock))
+		tr := NewRunner(tp, RunnerOpts{DoLock: true})
 
-		tr.Claim("172.16.0.0/12", []string{"test"})
+		tr.Claim("172.16.0.0/12", []string{"test"}, false, ClaimOpts{})
 
 		if didLock && !didUnlock {
 			t.Errorf("state locked but not unlocked")

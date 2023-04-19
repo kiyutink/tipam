@@ -45,7 +45,8 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 		// TODO: We shouldn't use the Claim from runner, but implement the claim function for the view, as we don't want to keep
 		// State in sync (claim only modifies its local state)
 		// Or maybe we should, I'm not sure yet. Still something to think about
-		err := rv.viewContext.Runner.Claim(rv.cidr, tags)
+		// TODO: 'final' param is hardcoded
+		err := rv.viewContext.Runner.Claim(rv.cidr, tags, false, tipam.ClaimOpts{})
 		// TODO: Is this the best way to do this? Probably not?
 		rv.viewContext.State, _ = rv.viewContext.Runner.ReadState()
 		if err != nil {
@@ -54,8 +55,8 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 		}
 		// We ignore the error because this cidr can't be malformed
 		_, ipNet, _ := net.ParseCIDR(rv.cidr)
-		res := tipam.NewClaim(ipNet, tags)
-		rv.viewContext.State.Claims[rv.cidr] = res
+		cl := tipam.NewClaim(ipNet, tags, false)
+		rv.viewContext.State.Claims[rv.cidr] = cl
 		rv.viewContext.HideModal()
 		rv.viewContext.Draw()
 	})

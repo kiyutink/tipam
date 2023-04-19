@@ -94,7 +94,7 @@ func (lyp *LocalYAML) Read() (*tipam.State, error) {
 		if err != nil {
 			return nil, err
 		}
-		r := tipam.NewClaim(ipNet, claim.Tags)
+		r := tipam.NewClaim(ipNet, claim.Tags, claim.Final)
 		state.Claims[c] = r
 	}
 

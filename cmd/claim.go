@@ -13,6 +13,7 @@ func newClaimCmd() *cobra.Command {
 
 		// Optional flags
 		complySubs bool
+		final      bool
 	}
 
 	var claimF claimFlags
@@ -29,13 +30,7 @@ func newClaimCmd() *cobra.Command {
 
 			runner := newRunner(p)
 
-			// Transform optional flags into ClaimOptions
-			opts := []tipam.ClaimOption{}
-			if claimF.complySubs {
-				opts = append(opts, tipam.WithComplySubs(true))
-			}
-
-			return runner.Claim(claimF.cidr, claimF.tags, opts...)
+			return runner.Claim(claimF.cidr, claimF.tags, claimF.final, tipam.ClaimOpts{ComplySubs: claimF.complySubs})
 		},
 	}
 
@@ -46,6 +41,7 @@ func newClaimCmd() *cobra.Command {
 	cmd.MarkFlagRequired("tag")
 
 	cmd.Flags().BoolVar(&claimF.complySubs, "comply-subs", false, "pass this flag to make subclaims comply with this claim by prepending tags")
+	cmd.Flags().BoolVar(&claimF.final, "final", false, "pass this flag to make the claim final (disallow subclaims)")
 
 	return cmd
 }

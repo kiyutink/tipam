@@ -74,25 +74,30 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 	subnetCidr := subnet.String()
 	text := subnetCidr
 	text = helper.PadRight(text, colWidth-len(text))
-	if res, ok := nv.viewContext.State.Claims[subnetCidr]; ok {
-		text += fmt.Sprintf(" = %v", strings.Join(res.Tags, "/"))
+	if cl, ok := nv.viewContext.State.Claims[subnetCidr]; ok {
+		text += fmt.Sprintf(" = %v", strings.Join(cl.Tags, "/"))
 	} else {
-		newRes := tipam.NewClaim(subnet, nil)
-		supers := nv.viewContext.State.FindSupers(newRes)
+		newCl := tipam.NewClaim(subnet, nil, false)
+		subs, supers := nv.viewContext.State.FindRelated(newCl)
 
 		if len(supers) > 0 {
-			longestTagsRes := supers[0]
+			longestTagsClaim := supers[0]
 			for _, p := range supers {
-				if len(p.Tags) > len(longestTagsRes.Tags) {
-					longestTagsRes = p
+				if len(p.Tags) > len(longestTagsClaim.Tags) {
+					longestTagsClaim = p
 				}
 			}
 
-			text += fmt.Sprintf(" ~ [grey]%v[-]", strings.Join(longestTagsRes.Tags, "/"))
+			text += fmt.Sprintf(" ~ [grey]%v[-]", strings.Join(longestTagsClaim.Tags, "/"))
+		}
+
+		if len(subs) > 0 {
+			text += " [yellow]*[-]"
 		}
 	}
 
 	cell := tview.NewTableCell(text)
+	cell.SetTextColor(tcell.ColorAqua)
 	cell.SetExpansion(1)
 
 	return cell

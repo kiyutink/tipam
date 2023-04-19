@@ -36,7 +36,7 @@ func newTestPersistor() *testPersistor {
 		testRead: func() (*State, error) {
 			cidr := "10.0.1.0/24"
 			_, ipNet, _ := net.ParseCIDR(cidr)
-			c := NewClaim(ipNet, []string{"test", "test_inner"})
+			c := NewClaim(ipNet, []string{"test", "test_inner"}, false)
 
 			return &State{
 				Claims: map[string]Claim{

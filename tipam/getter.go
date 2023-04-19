@@ -21,8 +21,8 @@ func (r *Runner) Get(cidr string) error {
 		return err
 	}
 
-	if res, ok := state.Claims[cidr]; ok {
-		fmt.Printf("%v", res)
+	if cl, ok := state.Claims[cidr]; ok {
+		fmt.Printf("%v", cl)
 	}
 
 	return nil

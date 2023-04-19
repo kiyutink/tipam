@@ -12,34 +12,18 @@ type Runner struct {
 	doLock    bool
 }
 
-type runnerParams struct {
-	// doLock specifies whether to use persistor's locks
+type RunnerOpts struct {
+	// DoLock specifies whether to use persistor's locks
 	// when operating on the state
-	doLock bool
+	DoLock bool
 }
 
-type RunnerOption func(*runnerParams)
-
-func WithLocking(do bool) RunnerOption {
-	return func(rp *runnerParams) {
-		rp.doLock = do
-	}
-}
-
-func NewRunner(p Persistor, opts ...RunnerOption) *Runner {
+func NewRunner(p Persistor, opts RunnerOpts) *Runner {
 	r := &Runner{
 		persistor: p,
 	}
 
-	params := &runnerParams{
-		doLock: true,
-	}
-
-	for _, opt := range opts {
-		opt(params)
-	}
-
-	r.doLock = params.doLock
+	r.doLock = opts.DoLock
 
 	return r
 }

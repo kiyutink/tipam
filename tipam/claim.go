@@ -9,10 +9,11 @@ type Claim struct {
 }
 
 // NewClaimFromCIDR parses a given CIDR and returns a claim. If the CIDR is invalid, returns an error
-func NewClaim(ipNet *net.IPNet, tags []string) Claim {
+func NewClaim(ipNet *net.IPNet, tags []string, final bool) Claim {
 	return Claim{
 		IPNet: ipNet,
 		Tags:  tags,
+		Final: final,
 	}
 }
 

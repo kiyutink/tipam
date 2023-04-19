@@ -2,7 +2,6 @@ package visual
 
 import (
 	"fmt"
-	"net"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -53,9 +52,7 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 			fmt.Println(err)
 			return
 		}
-		// We ignore the error because this cidr can't be malformed
-		_, ipNet, _ := net.ParseCIDR(rv.cidr)
-		cl := tipam.NewClaim(ipNet, tags, false)
+		cl := tipam.MustParseClaimFromCIDR(rv.cidr, tags, false)
 		rv.viewContext.State.Claims[rv.cidr] = cl
 		rv.viewContext.HideModal()
 		rv.viewContext.Draw()

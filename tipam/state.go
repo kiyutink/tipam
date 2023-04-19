@@ -4,6 +4,12 @@ type State struct {
 	Claims map[string]Claim
 }
 
+func NewState() *State {
+	return &State{
+		Claims: map[string]Claim{},
+	}
+}
+
 // FindRelated returns all the related Claims as subs, supers
 func (s *State) FindRelated(cl Claim) ([]Claim, []Claim) {
 	subs, supers := []Claim{}, []Claim{}

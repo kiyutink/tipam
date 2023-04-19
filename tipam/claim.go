@@ -8,13 +8,19 @@ type Claim struct {
 	Final bool
 }
 
-// NewClaimFromCIDR parses a given CIDR and returns a claim. If the CIDR is invalid, returns an error
+// NewClaim returns a new Claim given its fields
 func NewClaim(ipNet *net.IPNet, tags []string, final bool) Claim {
 	return Claim{
 		IPNet: ipNet,
 		Tags:  tags,
 		Final: final,
 	}
+}
+
+// MustParseClaimFromCIDR parses a given CIDR and returns a Claim. If the CIDR is invalid, panics
+func MustParseClaimFromCIDR(cidr string, tags []string, final bool) Claim {
+	_, ipNet, _ := net.ParseCIDR(cidr)
+	return NewClaim(ipNet, tags, final)
 }
 
 // LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of the supernet

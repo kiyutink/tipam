@@ -54,7 +54,7 @@ func TestClaimLocksState(t *testing.T) {
 		tp.testLock = func() error { didLock = true; return nil }
 		tp.testUnlock = func() error { didUnlock = true; return nil }
 
-		tr := NewRunner(tp, RunnerOpts{DoLock: true})
+		tr := NewRunner(tp, RunnerOpts{DoLock: tc.doLock})
 
 		tr.Claim("172.16.0.0/12", []string{"test"}, false, ClaimOpts{})
 

@@ -41,10 +41,7 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 	})
 	form.AddButton("Claim", func() {
 		tags := strings.Split(tagsInputVal, "/")
-		// TODO: We shouldn't use the Claim from runner, but implement the claim function for the view, as we don't want to keep
-		// State in sync (claim only modifies its local state)
-		// Or maybe we should, I'm not sure yet. Still something to think about
-		// TODO: 'final' param is hardcoded
+		// TODO: 'final' param is hardcoded, should be passed in the form
 		err := rv.viewContext.Runner.Claim(rv.cidr, tags, false, tipam.ClaimOpts{})
 		// TODO: Is this the best way to do this? Probably not?
 		rv.viewContext.State, _ = rv.viewContext.Runner.ReadState()

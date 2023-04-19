@@ -97,7 +97,7 @@ func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 	}
 
 	cell := tview.NewTableCell(text)
-	cell.SetTextColor(tcell.ColorAqua)
+	cell.SetTextColor(tcell.ColorMediumSlateBlue)
 	cell.SetExpansion(1)
 
 	return cell

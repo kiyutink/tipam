@@ -2,6 +2,7 @@ package visual
 
 import (
 	"github.com/common-nighthawk/go-figure"
+	"github.com/gdamore/tcell/v2"
 	"github.com/kiyutink/tipam/helper"
 	"github.com/kiyutink/tipam/tipam"
 	"github.com/rivo/tview"
@@ -23,6 +24,7 @@ func InitTipam(runner *tipam.Runner) {
 	app := tview.NewApplication()
 	pages := tview.NewPages()
 	pages.SetBorder(true)
+	pages.Box.SetBorderColor(tcell.ColorMediumSlateBlue)
 
 	logoText := figure.NewFigure("tipam", "", true).String()
 	logoText = helper.PadLinesRight(logoText)

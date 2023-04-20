@@ -49,11 +49,7 @@ func (r *Runner) Claim(cidr string, tags []string, final bool, opts ClaimOpts) e
 			err = errors.New("can't create a final superclaim")
 		}
 		for _, sub := range subs {
-			tags = append([]string{}, newClaim.Tags...)
-			tags = append(tags, sub.Tags...)
-
-			sub.Tags = tags
-			state.Claims[sub.IPNet.String()] = sub
+			sub.Tags = append(newClaim.Tags[0:len(newClaim.Tags):len(newClaim.Tags)], sub.Tags...)
 		}
 	} else {
 		err = ValidateOnSubs(newClaim, subs)

@@ -1,16 +1,16 @@
 package tipam
 
 type State struct {
-	Claims map[string]Claim
+	Claims map[string]*Claim
 }
 
 func NewState() *State {
 	return &State{
-		Claims: map[string]Claim{},
+		Claims: map[string]*Claim{},
 	}
 }
 
-func NewStateWithClaims(claims []Claim) *State {
+func NewStateWithClaims(claims []*Claim) *State {
 	state := NewState()
 	for _, c := range claims {
 		state.Claims[c.IPNet.String()] = c
@@ -20,26 +20,26 @@ func NewStateWithClaims(claims []Claim) *State {
 }
 
 // FindRelated returns all the related Claims as subs, supers
-func (s *State) FindRelated(cl Claim) ([]Claim, []Claim) {
-	subs, supers := []Claim{}, []Claim{}
-	for _, r := range s.Claims {
-		if r.LiesWithinRangeOf(cl) {
-			subs = append(subs, r)
+func (s *State) FindRelated(cl *Claim) ([]*Claim, []*Claim) {
+	subs, supers := []*Claim{}, []*Claim{}
+	for _, c := range s.Claims {
+		if c.LiesWithinRangeOf(cl) {
+			subs = append(subs, c)
 		}
-		if cl.LiesWithinRangeOf(r) {
-			supers = append(supers, r)
+		if cl.LiesWithinRangeOf(c) {
+			supers = append(supers, c)
 		}
 	}
 
 	return subs, supers
 }
 
-func (s *State) FindSubs(cl Claim) []Claim {
+func (s *State) FindSubs(cl *Claim) []*Claim {
 	sub, _ := s.FindRelated(cl)
 	return sub
 }
 
-func (s *State) FindSupers(cl Claim) []Claim {
+func (s *State) FindSupers(cl *Claim) []*Claim {
 	_, super := s.FindRelated(cl)
 	return super
 }

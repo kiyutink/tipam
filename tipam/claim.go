@@ -9,8 +9,8 @@ type Claim struct {
 }
 
 // NewClaim returns a new Claim given its fields
-func NewClaim(ipNet *net.IPNet, tags []string, final bool) Claim {
-	return Claim{
+func NewClaim(ipNet *net.IPNet, tags []string, final bool) *Claim {
+	return &Claim{
 		IPNet: ipNet,
 		Tags:  tags,
 		Final: final,
@@ -18,13 +18,13 @@ func NewClaim(ipNet *net.IPNet, tags []string, final bool) Claim {
 }
 
 // MustParseClaimFromCIDR parses a given CIDR and returns a Claim. If the CIDR is invalid, panics
-func MustParseClaimFromCIDR(cidr string, tags []string, final bool) Claim {
+func MustParseClaimFromCIDR(cidr string, tags []string, final bool) *Claim {
 	_, ipNet, _ := net.ParseCIDR(cidr)
 	return NewClaim(ipNet, tags, final)
 }
 
 // LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of the supernet
-func (c Claim) LiesWithinRangeOf(super Claim) bool {
+func (c *Claim) LiesWithinRangeOf(super *Claim) bool {
 	onesSub, _ := c.IPNet.Mask.Size()
 	onesSuper, _ := super.IPNet.Mask.Size()
 
@@ -42,7 +42,7 @@ func (c Claim) LiesWithinRangeOf(super Claim) bool {
 }
 
 // IsValidSubclaimOf checks whether the claim has all the necessary tags to be a valid subclaim of super
-func (r Claim) IsValidSubclaimOf(super Claim) bool {
+func (r *Claim) IsValidSubclaimOf(super *Claim) bool {
 	// The subclaim must introduce at least one new tag.
 	if len(r.Tags) <= len(super.Tags) {
 		return false

@@ -1,6 +1,7 @@
 package tipam
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func TestClaimValidates(t *testing.T) {
 
 	for _, tc := range testCases {
 		existingClaim := MustParseClaimFromCIDR("10.0.1.0/24", []string{"test", "test_inner"}, false)
-		state := NewStateWithClaims([]Claim{existingClaim})
+		state := NewStateWithClaims([]*Claim{existingClaim})
 
 		tr := Runner{
 			persistor: newTestPersistor(state),
@@ -71,7 +72,7 @@ func TestClaimLocksState(t *testing.T) {
 
 func TestClaimFailsSubclaimsOfFinal(t *testing.T) {
 	existingClaim := MustParseClaimFromCIDR("10.0.1.0/24", []string{"test1"}, true)
-	state := NewStateWithClaims([]Claim{existingClaim})
+	state := NewStateWithClaims([]*Claim{existingClaim})
 	tr := Runner{persistor: newTestPersistor(state)}
 
 	err := tr.Claim("10.0.1.0/30", []string{"test", "test_inner"}, false, ClaimOpts{})
@@ -82,11 +83,6 @@ func TestClaimFailsSubclaimsOfFinal(t *testing.T) {
 }
 
 func TestClaimComplySubs(t *testing.T) {
-	existingClaims := []Claim{
-		MustParseClaimFromCIDR("10.0.1.0/24", []string{"test1"}, true),
-		MustParseClaimFromCIDR("10.0.2.0/24", []string{"test2"}, true),
-	}
-
 	testCases := []struct {
 		final    bool
 		succeeds bool
@@ -96,6 +92,10 @@ func TestClaimComplySubs(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		existingClaims := []*Claim{
+			MustParseClaimFromCIDR("10.0.1.0/24", []string{"test1"}, true),
+			MustParseClaimFromCIDR("10.0.2.0/24", []string{"test2"}, true),
+		}
 		state := NewStateWithClaims(existingClaims)
 		tr := Runner{persistor: newTestPersistor(state)}
 
@@ -110,6 +110,8 @@ func TestClaimComplySubs(t *testing.T) {
 		}
 
 		if tc.succeeds && len(state.Claims["10.0.1.0/24"].Tags) != 2 {
+			fmt.Printf("%+v\n", state.Claims["10.0.1.0/24"])
+			fmt.Printf("%+v\n", state.Claims["10.0.2.0/24"])
 			t.Errorf("expected claim with complySubs to prepend new tags to subclaims, but didn't")
 		}
 	}

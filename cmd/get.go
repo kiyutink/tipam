@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +20,13 @@ func newGetCmd() *cobra.Command {
 			}
 			runner := newRunner(p)
 
-			return runner.Get(cidr)
+			claim, err := runner.Get(cidr)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", claim)
+			return nil
 		},
 	}
 

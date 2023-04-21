@@ -1,29 +1,29 @@
 package tipam
 
 import (
-	"fmt"
+	"errors"
 	"net"
 )
 
-func (r *Runner) Get(cidr string) error {
+func (r *Runner) Get(cidr string) (*Claim, error) {
 	_, _, err := net.ParseCIDR(cidr)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = r.persistor.Lock()
 	if err != nil {
-		return err
+		return nil, err
 	}
+	defer r.persistor.Unlock()
 
 	state, err := r.persistor.Read()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if cl, ok := state.Claims[cidr]; ok {
-		fmt.Printf("%v", cl)
+		return cl, nil
 	}
-
-	return nil
+	return nil, errors.New("claim not found")
 }

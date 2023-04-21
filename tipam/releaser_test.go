@@ -2,7 +2,7 @@ package tipam
 
 import "testing"
 
-func TestRelease(t *testing.T) {
+func TestReleaser(t *testing.T) {
 	cidr := "10.0.0.0/8"
 	c := MustParseClaimFromCIDR(cidr, []string{"test"}, false)
 	state := NewStateWithClaims([]*Claim{c})

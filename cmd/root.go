@@ -21,7 +21,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	// Flags used by the persistor
-	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "localyaml", "which persistor to use. Only 'localyaml' is available at the time")
+	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "localyaml", "which persistor to use. Available options: localyaml, inmemory")
 	rootCmd.PersistentFlags().StringVar(&persistF.localYAMLFileName, "filename", "tipam.yaml", "the filename for the 'localyaml' persistor")
 
 	// Flags mapped into runner options

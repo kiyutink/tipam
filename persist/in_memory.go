@@ -6,6 +6,13 @@ type InMemory struct {
 	state *tipam.State
 }
 
+func NewInMemory() *InMemory {
+	state := tipam.NewState()
+	return &InMemory{
+		state: state,
+	}
+}
+
 func (im *InMemory) Persist(s *tipam.State) error {
 	im.state = s
 	return nil

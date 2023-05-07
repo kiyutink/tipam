@@ -37,8 +37,19 @@ func NewS3Dynamo(bucket string, keyInBucket string, table string, leaseDuration 
 	}
 	s3Client := s3.NewFromConfig(cfg)
 
+	lc, err := dynamolock.New(
+		dynamodb.NewFromConfig(cfg),
+		table,
+		dynamolock.WithLeaseDuration(leaseDuration),
+		dynamolock.WithHeartbeatPeriod(pollInterval),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	return &S3Dynamo{
-		s3client: s3Client,
+		s3client:   s3Client,
+		lockClient: lc,
 
 		bucket:        bucket,
 		keyInBucket:   keyInBucket,
@@ -105,30 +116,16 @@ func (s3d *S3Dynamo) Read() (*tipam.State, error) {
 }
 
 func (s3d *S3Dynamo) Lock() error {
-	cfg, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		return err
-	}
-
-	c, err := dynamolock.New(
-		dynamodb.NewFromConfig(cfg),
-		s3d.table,
-		dynamolock.WithLeaseDuration(s3d.leaseDuration),
-		dynamolock.WithHeartbeatPeriod(s3d.pollInterval),
-	)
-	if err != nil {
-		panic(err)
-	}
-	s3d.lockClient = c
-
-	l, err := c.AcquireLock(
+	l, err := s3d.lockClient.AcquireLock(
 		"lock",
 		dynamolock.WithRefreshPeriod(s3d.pollInterval),
 		dynamolock.WithAdditionalTimeToWaitForLock(s3d.leaseDuration),
 	)
+
 	s3d.lock = l
+
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	return nil
@@ -137,7 +134,7 @@ func (s3d *S3Dynamo) Lock() error {
 func (s3d *S3Dynamo) Unlock() error {
 	_, err := s3d.lockClient.ReleaseLock(s3d.lock)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }

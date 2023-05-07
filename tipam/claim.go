@@ -17,10 +17,19 @@ func NewClaim(ipNet *net.IPNet, tags []string, final bool) *Claim {
 	}
 }
 
-// MustParseClaimFromCIDR parses a given CIDR and returns a Claim. If the CIDR is invalid, panics
+// ParseClaimFromCIDR parses a given CIDR and returns a Claim and an optional error
+func ParseClaimFromCIDR(cidr string, tags []string, final bool) (*Claim, error) {
+	_, ipNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+	return NewClaim(ipNet, tags, final), nil
+}
+
+// MustParseClaimFromCIDR parses a given CIDR and returns a Claim. Panics if the CIDR is invalid
 func MustParseClaimFromCIDR(cidr string, tags []string, final bool) *Claim {
-	_, ipNet, _ := net.ParseCIDR(cidr)
-	return NewClaim(ipNet, tags, final)
+	c, _ := ParseClaimFromCIDR(cidr, tags, final)
+	return c
 }
 
 // LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of the supernet

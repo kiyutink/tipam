@@ -2,7 +2,7 @@ package persist
 
 import (
 	"errors"
-	"net"
+	"io"
 	"os"
 
 	"github.com/gofrs/flock"
@@ -50,17 +50,9 @@ func (lyp *LocalYAML) Persist(s *tipam.State) error {
 	}
 	defer file.Close()
 
-	yamlState := newEmptyYAMLState()
+	ys := stateToYAMLState(s)
 
-	for cidr, r := range s.Claims {
-		yamlState.Claims[cidr] = yamlStateClaim{Tags: r.Tags, Final: r.Final}
-	}
-
-	encoder := yaml.NewEncoder(file)
-	encoder.SetIndent(2)
-
-	err = encoder.Encode(yamlState)
-
+	err = encodeYAMLState(ys, file)
 	return err
 }
 
@@ -77,26 +69,17 @@ func (lyp *LocalYAML) Read() (*tipam.State, error) {
 		return nil, err
 	}
 
-	yamlState := newEmptyYAMLState()
+	ys := newEmptyYAMLState()
 
-	err = yaml.Unmarshal(bytes, yamlState)
+	err = yaml.Unmarshal(bytes, ys)
 
 	if err != nil {
 		return nil, err
 	}
 
-	state := tipam.NewState()
+	s, err := yamlStateToState(ys)
 
-	for c, claim := range yamlState.Claims {
-		_, ipNet, err := net.ParseCIDR(c)
-		if err != nil {
-			return nil, err
-		}
-		r := tipam.NewClaim(ipNet, claim.Tags, claim.Final)
-		state.Claims[c] = r
-	}
-
-	return state, nil
+	return s, err
 }
 
 func (lyp *LocalYAML) Lock() error {
@@ -105,4 +88,39 @@ func (lyp *LocalYAML) Lock() error {
 
 func (lyp *LocalYAML) Unlock() error {
 	return lyp.flock.Unlock()
+}
+
+func yamlStateToState(ys *yamlState) (*tipam.State, error) {
+	s := tipam.NewState()
+
+	for cidr, yc := range ys.Claims {
+		c, err := tipam.ParseClaimFromCIDR(cidr, yc.Tags, yc.Final)
+		if err != nil {
+			return nil, err
+		}
+		s.Claims[cidr] = c
+	}
+
+	return s, nil
+}
+
+func stateToYAMLState(s *tipam.State) *yamlState {
+	ys := newEmptyYAMLState()
+	for cidr, r := range s.Claims {
+		ys.Claims[cidr] = yamlStateClaim{Tags: r.Tags, Final: r.Final}
+	}
+	return ys
+}
+
+func encodeYAMLState(ys *yamlState, w io.Writer) error {
+	encoder := yaml.NewEncoder(w)
+	encoder.SetIndent(2)
+
+	return encoder.Encode(ys)
+}
+
+func decodeYAMLState(ys *yamlState, r io.Reader) error {
+	decoder := yaml.NewDecoder(r)
+
+	return decoder.Decode(ys)
 }

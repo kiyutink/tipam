@@ -11,8 +11,8 @@ func newGetCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "show claim with given CIDR",
-		Long:  "show claim with given CIDR, if it exists. If it doesn't exist, do nothing",
+		Short: "Show claim with given CIDR",
+		Long:  "Show claim with given CIDR, if it exists. If it doesn't exist, do nothing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p, err := newPersistor()
 			if err != nil {

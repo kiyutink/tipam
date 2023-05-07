@@ -8,8 +8,8 @@ func newReleaseCmd() *cobra.Command {
 	var cidr string
 	cmd := &cobra.Command{
 		Use:   "release",
-		Short: "release a block claim",
-		Long:  "release the block claim with the provided cidr",
+		Short: "Release a block claim",
+		Long:  "Release the block claim with the provided cidr",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p, err := newPersistor()
 			if err != nil {

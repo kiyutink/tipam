@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/kiyutink/tipam/internal/visual"
+	"github.com/kiyutink/tipam/visual"
 	"github.com/spf13/cobra"
 )
 

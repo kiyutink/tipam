@@ -7,6 +7,9 @@ type Persistor interface {
 	Unlock() error
 }
 
+// Runner is the main structure that defines all the externally-available methods.
+// In order to use tipam, one must initialize an instance of runner.
+// Do not initialize Runner directly, use the constructor function tipam.NewRunner instead
 type Runner struct {
 	persistor Persistor
 	doLock    bool

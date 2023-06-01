@@ -42,7 +42,7 @@ func (rv *ClaimView) Primitive() tview.Primitive {
 	form.AddButton("Claim", func() {
 		tags := strings.Split(tagsInputVal, "/")
 		// TODO: 'final' param is hardcoded, should be passed in the form
-		err := rv.viewContext.Runner.Claim(rv.cidr, tags, false, tipam.ClaimOpts{})
+		err := rv.viewContext.Runner.Claim(tipam.MustParseClaimFromCIDR(rv.cidr, tags, false), tipam.ClaimOpts{})
 		// TODO: Is this the best way to do this (refresh local state)? Probably not?
 		rv.viewContext.State, _ = rv.viewContext.Runner.ReadState()
 		if err != nil {

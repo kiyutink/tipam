@@ -30,7 +30,7 @@ func newClaimCmd() *cobra.Command {
 
 			runner := newRunner(p)
 
-			return runner.Claim(claimF.cidr, claimF.tags, claimF.final, tipam.ClaimOpts{ComplySubs: claimF.complySubs})
+			return runner.Claim(tipam.MustParseClaimFromCIDR(claimF.cidr, claimF.tags, claimF.final), tipam.ClaimOpts{ComplySubs: claimF.complySubs})
 		},
 	}
 

@@ -30,7 +30,7 @@ func TestClaimValidates(t *testing.T) {
 			persistor: newTestPersistor(state),
 		}
 
-		err := tr.Claim(tc.cidr, tc.tags, false, ClaimOpts{})
+		err := tr.Claim(MustParseClaimFromCIDR(tc.cidr, tc.tags, false), ClaimOpts{})
 
 		if tc.shouldFail && err == nil {
 			t.Errorf("expected claim with CIDR %v and tags %v to fail, but didn't: %v", tc.cidr, tc.tags, tc.errorMsg)
@@ -54,7 +54,7 @@ func TestClaimLocksState(t *testing.T) {
 		tp := newTestPersistor(NewState())
 		tr := NewRunner(tp, RunnerOpts{DoLock: tc.doLock})
 
-		tr.Claim("172.16.0.0/12", []string{"test"}, false, ClaimOpts{})
+		tr.Claim(MustParseClaimFromCIDR("172.16.0.0/12", []string{"test"}, false), ClaimOpts{})
 
 		if tp.didLock && !tp.didUnlock {
 			t.Errorf("state locked but not unlocked")
@@ -75,7 +75,7 @@ func TestClaimFailsSubclaimsOfFinal(t *testing.T) {
 	state := NewStateWithClaims([]*Claim{existingClaim})
 	tr := Runner{persistor: newTestPersistor(state)}
 
-	err := tr.Claim("10.0.1.0/30", []string{"test", "test_inner"}, false, ClaimOpts{})
+	err := tr.Claim(MustParseClaimFromCIDR("10.0.1.0/30", []string{"test", "test_inner"}, false), ClaimOpts{})
 
 	if err == nil {
 		t.Errorf("expected to fail when creating a subclaim of a final claim, but succeeded")
@@ -99,7 +99,7 @@ func TestClaimComplySubs(t *testing.T) {
 		state := NewStateWithClaims(existingClaims)
 		tr := Runner{persistor: newTestPersistor(state)}
 
-		err := tr.Claim("10.0.0.0/16", []string{"test_outer"}, tc.final, ClaimOpts{ComplySubs: true})
+		err := tr.Claim(MustParseClaimFromCIDR("10.0.0.0/16", []string{"test_outer"}, tc.final), ClaimOpts{ComplySubs: true})
 
 		if err == nil && !tc.succeeds {
 			t.Errorf("expected to fail creating a superclaim marked as final, but succeeded")

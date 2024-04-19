@@ -14,6 +14,7 @@ type ViewContext struct {
 	State     *tipam.State
 	Runner    *tipam.Runner
 	Meta      *tview.TextView
+	Modal     View
 }
 
 func (vc *ViewContext) PushView(view View) {
@@ -36,12 +37,18 @@ func (vc *ViewContext) PopView() {
 }
 
 func (vc *ViewContext) ShowModal(view View) {
+	vc.Modal = view
 	vc.Pages.AddPage("modal", view.Primitive(), true, true)
 }
 
 func (vc *ViewContext) HideModal() {
+	vc.Modal = nil
 	vc.Pages.RemovePage("modal")
 	vc.Draw()
+}
+
+func (vc *ViewContext) DrawModal() {
+	vc.Pages.AddPage("modal", vc.Modal.Primitive(), true, true)
 }
 
 func (vc *ViewContext) Draw() {

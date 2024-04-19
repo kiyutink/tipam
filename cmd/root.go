@@ -24,7 +24,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().SortFlags = false
 
 	// Determines the persistor to use
-	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "localyaml", "which persistor to use. Available options: localyaml, inmemory")
+	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "localyaml", "which persistor to use. Available options: localyaml, inmemory, s3dynamo")
 
 	// For localyaml persistor
 	rootCmd.PersistentFlags().StringVar(&persistF.localYAMLFileName, "filename", "tipam.yaml", "'localyaml' persistor - filename to use")

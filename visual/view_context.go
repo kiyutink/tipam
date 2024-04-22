@@ -36,17 +36,23 @@ func (vc *ViewContext) PopView() {
 	vc.Draw()
 }
 
+
+// ShowModal shows a modal with the passed view. Only ONE modal can exist
+// at a time and it will be stored in state so it can be re-shown later
 func (vc *ViewContext) ShowModal(view View) {
 	vc.Modal = view
 	vc.Pages.AddPage("modal", view.Primitive(), true, true)
 }
 
+// HideModal hides the modal. It also removes it from the state (but maybe we shouldn't?)
 func (vc *ViewContext) HideModal() {
 	vc.Modal = nil
 	vc.Pages.RemovePage("modal")
 	vc.Draw()
 }
 
+// DrawModal makes the existing modal visible (and re-draws it). This is intended to be used 
+// essentially as a way to force a repaint
 func (vc *ViewContext) DrawModal() {
 	vc.Pages.AddPage("modal", vc.Modal.Primitive(), true, true)
 }

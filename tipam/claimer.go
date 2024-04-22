@@ -20,6 +20,12 @@ func (r *Runner) Claim(c *Claim, opts ClaimOpts) error {
 		return fmt.Errorf("at least one tag has to be provided")
 	}
 
+	for _, tag := range c.Tags {
+		if tag == "" {
+			return fmt.Errorf("tag can not be an empty string")
+		}
+	}
+
 	if r.doLock {
 		r.persistor.Lock()
 		defer r.persistor.Unlock()

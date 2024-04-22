@@ -13,6 +13,9 @@ func TestClaimValidates(t *testing.T) {
 		errorMsg   string
 	}{
 		{"10.0.1.0/25", []string{}, true, "should fail if no tags are provided"},
+		{"10.0.1.0/25", []string{""}, true, "should fail when providing an empty string as tag"},
+		{"10.0.1.0/25", []string{"", ""}, true, "should fail when providing an empty string as tag"},
+		{"10.0.1.0/25", []string{"", "", "test"}, true, "should fail when providing an empty string as tag"},
 		{"10.0.1.0/25", []string{"test2"}, true, "should fail if not enough tags"},
 		{"10.0.1.0/25", []string{"test"}, true, "should fail if not enough tags"},
 		{"10.0.1.0/25", []string{"test", "test_inner"}, true, "should fail if not enough tags"},

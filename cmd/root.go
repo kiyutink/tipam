@@ -24,10 +24,10 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().SortFlags = false
 
 	// Determines the persistor to use
-	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "localyaml", "which persistor to use. Available options: localyaml, inmemory, s3dynamo")
+	rootCmd.PersistentFlags().StringVar(&persistF.persistor, "persistor", "local", "which persistor to use. Available options: local, inmemory, s3dynamo")
 
-	// For localyaml persistor
-	rootCmd.PersistentFlags().StringVar(&persistF.localYAMLFileName, "filename", "tipam.yaml", "'localyaml' persistor - filename to use")
+	// For local persistor
+	rootCmd.PersistentFlags().StringVar(&persistF.localFileName, "filename", "tipam.yaml", "'local' persistor - filename to use")
 
 	// For s3dynamo persistor
 	rootCmd.PersistentFlags().StringVar(&persistF.s3DynamoBucket, "bucket", "", "'s3dynamo' persistor - the s3 bucket to use")
@@ -42,6 +42,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newClaimCmd())
 	rootCmd.AddCommand(newReleaseCmd())
 	rootCmd.AddCommand(newGetCmd())
+	rootCmd.AddCommand(newListCmd())
 
 	return rootCmd
 }

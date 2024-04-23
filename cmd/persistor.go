@@ -9,15 +9,15 @@ import (
 )
 
 const (
-	persistorLocalYAML = "localyaml"
-	persistorInMemory  = "inmemory"
-	persistorS3Dynamo  = "s3dynamo"
+	persistorLocal    = "local"
+	persistorInMemory = "inmemory"
+	persistorS3Dynamo = "s3dynamo"
 )
 
 type persistFlags struct {
 	persistor string
 
-	localYAMLFileName string
+	localFileName string
 
 	s3DynamoBucket        string
 	s3DynamoKeyInBucket   string
@@ -30,8 +30,8 @@ var persistF = persistFlags{}
 
 func newPersistor() (tipam.Persistor, error) {
 	switch persistF.persistor {
-	case persistorLocalYAML:
-		p := persist.NewLocalYAML(persistF.localYAMLFileName)
+	case persistorLocal:
+		p := persist.NewLocal(persistF.localFileName)
 		return p, nil
 	case persistorInMemory:
 		p := persist.NewInMemory()

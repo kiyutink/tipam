@@ -1,5 +1,6 @@
 package tipam
 
+// Persistor is used to Write/Read/Lock/Unlock state to a storage
 type Persistor interface {
 	Persist(*State) error
 	Read() (*State, error)
@@ -21,6 +22,8 @@ type RunnerOpts struct {
 	DoLock bool
 }
 
+// Initializes a new Runner instance and returns a pointer to it. Only use NewRunner
+// for initializing a Runner, do not initialize it directly
 func NewRunner(p Persistor, opts RunnerOpts) *Runner {
 	r := &Runner{
 		persistor: p,

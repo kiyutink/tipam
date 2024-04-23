@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/kiyutink/tipam/tipam"
 	"github.com/spf13/cobra"
 )
@@ -9,7 +11,7 @@ func newClaimCmd() *cobra.Command {
 	type claimFlags struct {
 		// Required flags
 		cidr string
-		tags []string
+		tags string
 
 		// Optional flags
 		complySubs bool
@@ -29,16 +31,17 @@ func newClaimCmd() *cobra.Command {
 			}
 
 			runner := newRunner(p)
+			tagsSlice := strings.Split(claimF.tags, "/")
 
-			return runner.Claim(tipam.MustParseClaimFromCIDR(claimF.cidr, claimF.tags, claimF.final), tipam.ClaimOpts{ComplySubs: claimF.complySubs})
+			return runner.Claim(tipam.MustParseClaimFromCIDR(claimF.cidr, tagsSlice, claimF.final), tipam.ClaimOpts{ComplySubs: claimF.complySubs})
 		},
 	}
 
 	cmd.Flags().StringVar(&claimF.cidr, "cidr", "", "the CIDR range of the claim to be created")
 	cmd.MarkFlagRequired("cidr")
 
-	cmd.Flags().StringSliceVar(&claimF.tags, "tag", []string{}, "the list of tags attach to created claim; multiple instances of this flag can be passed to attach multiple flags")
-	cmd.MarkFlagRequired("tag")
+	cmd.Flags().StringVar(&claimF.tags, "tags", "", "the list of tags attach to created claim (separated by /, e.g. --tags network/claim)")
+	cmd.MarkFlagRequired("tags")
 
 	cmd.Flags().BoolVar(&claimF.complySubs, "comply-subs", false, "pass this flag to make subclaims comply with this claim by prepending tags")
 	cmd.Flags().BoolVar(&claimF.final, "final", false, "pass this flag to make the claim final (disallow subclaims)")

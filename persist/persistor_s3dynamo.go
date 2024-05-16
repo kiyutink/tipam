@@ -102,6 +102,10 @@ func (s3d *S3Dynamo) Read() (*tipam.State, error) {
 		return tipam.NewState(), nil
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	err = decodeYAMLState(ys, s3Obj.Body)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,9 @@
 package tipam
 
-import "net"
+import (
+	"fmt"
+	"net"
+)
 
 type Claim struct {
 	IPNet *net.IPNet
@@ -34,26 +37,13 @@ func MustParseClaimFromCIDR(cidr string, tags []string, final bool) *Claim {
 
 // LiesWithinRangeOf checks whether the claim's CIDR range lies within the range of the supernet
 func (c *Claim) LiesWithinRangeOf(super *Claim) bool {
-	onesSub, _ := c.IPNet.Mask.Size()
-	onesSuper, _ := super.IPNet.Mask.Size()
-
-	// The subnet's mask should be longer, constituting a smaller CIDR range
-	if onesSub <= onesSuper {
-		return false
-	}
-
-	// The subnet's network address must lie within the supernet's CIDR range
-	if !super.IPNet.Contains(c.IPNet.IP) {
-		return false
-	}
-
-	return true
+	return isSubnet(c.IPNet, super.IPNet)
 }
 
 // IsValidSubclaimOf checks whether the claim has all the necessary tags to be a valid subclaim of super
-func (r *Claim) IsValidSubclaimOf(super *Claim) bool {
+func (c *Claim) IsValidSubclaimOf(super *Claim) bool {
 	// The subclaim must introduce at least one new tag.
-	if len(r.Tags) <= len(super.Tags) {
+	if len(c.Tags) <= len(super.Tags) {
 		return false
 	}
 
@@ -64,10 +54,34 @@ func (r *Claim) IsValidSubclaimOf(super *Claim) bool {
 
 	// The subclaim must have all the tags that the superclaim has. The tags have to be in the same order
 	for i := range super.Tags {
-		if super.Tags[i] != r.Tags[i] {
+		if super.Tags[i] != c.Tags[i] {
 			return false
 		}
 	}
 
 	return true
+}
+
+// ValidateSubs validates (duh) claim r against given list of subclaims
+// subclaims. All subclaims should have all the tags
+// present on r and should have longer taglists
+func (c *Claim) ValidateSubs(subs []*Claim) error {
+	for _, cl := range subs {
+		if !cl.IsValidSubclaimOf(c) {
+			return fmt.Errorf("the claim is not a valid superclaim of claim with CIDR=%v", cl.IPNet.String())
+		}
+	}
+	return nil
+}
+
+// ValidateSupers validates (duh) claim r against a list of superclaims
+// The claim r should have all the tags that the longest super has
+// and introduce at least one new tag
+func (c *Claim) ValidateSupers(supers []*Claim) error {
+	for _, cl := range supers {
+		if !c.IsValidSubclaimOf(cl) {
+			return fmt.Errorf("the claim is not a valid subclaim of claim with CIDR=%v", cl.IPNet.String())
+		}
+	}
+	return nil
 }

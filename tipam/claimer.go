@@ -14,7 +14,7 @@ type ClaimOpts struct {
 	ComplySubs bool
 }
 
-// Claim creates a new claim
+// Claim creates a new Claim and adds it to the state.
 func (r *Runner) Claim(c *Claim, opts ClaimOpts) error {
 	if len(c.Tags) < 1 {
 		return fmt.Errorf("at least one tag has to be provided")
@@ -42,8 +42,7 @@ func (r *Runner) Claim(c *Claim, opts ClaimOpts) error {
 
 	subs, supers := state.FindRelated(c)
 
-	err = ValidateOnSupers(c, supers)
-
+	err = c.ValidateSupers(supers)
 	if err != nil {
 		return err
 	}
@@ -56,7 +55,7 @@ func (r *Runner) Claim(c *Claim, opts ClaimOpts) error {
 			sub.Tags = append(c.Tags[0:len(c.Tags):len(c.Tags)], sub.Tags...)
 		}
 	} else {
-		err = ValidateOnSubs(c, subs)
+		err = c.ValidateSubs(subs)
 	}
 
 	if err != nil {

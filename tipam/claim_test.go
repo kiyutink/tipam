@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateOnSubs(t *testing.T) {
+func TestValidateSubs(t *testing.T) {
 	claim := MustParseClaimFromCIDR("10.0.0.0/8", []string{"test"}, false)
 	subsPassing := []*Claim{
 		MustParseClaimFromCIDR("10.0.0.0/12", []string{"test", "test_inner"}, false),
@@ -15,14 +15,14 @@ func TestValidateOnSubs(t *testing.T) {
 		MustParseClaimFromCIDR("10.0.0.0/12", []string{"production"}, false),
 	}
 
-	err := ValidateOnSubs(claim, subsPassing)
+	err := claim.ValidateSubs(subsPassing)
 	assert.Nil(t, err)
 
-	err = ValidateOnSubs(claim, subsFailing)
+	err = claim.ValidateSubs(subsFailing)
 	assert.NotNil(t, err)
 }
 
-func TestValidateOnSupers(t *testing.T) {
+func TestValidateSupers(t *testing.T) {
 	claim := MustParseClaimFromCIDR("10.0.0.0/12", []string{"test", "test_inner"}, false)
 	supersPassing := []*Claim{
 		MustParseClaimFromCIDR("10.0.0.0/8", []string{"test"}, false),
@@ -31,9 +31,9 @@ func TestValidateOnSupers(t *testing.T) {
 		MustParseClaimFromCIDR("10.0.0.0/8", []string{"production"}, false),
 	}
 
-	err := ValidateOnSupers(claim, supersPassing)
+	err := claim.ValidateSupers(supersPassing)
 	assert.Nil(t, err)
 
-	err = ValidateOnSupers(claim, supersFailing)
+	err = claim.ValidateSupers(supersFailing)
 	assert.NotNil(t, err)
 }

@@ -1,7 +1,6 @@
 package persist
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/kiyutink/tipam/tipam"
@@ -22,8 +21,6 @@ claims:
 	}
 
 	if res != expected {
-		fmt.Println(expected)
-		fmt.Println(res)
 		t.Fatalf("TestStateToYAMLString output doesn't match: expected %v, got %v", expected, res)
 	}
 }

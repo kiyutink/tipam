@@ -1,7 +1,6 @@
 package tipam
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -113,8 +112,6 @@ func TestClaimComplySubs(t *testing.T) {
 		}
 
 		if tc.succeeds && len(state.Claims["10.0.1.0/24"].Tags) != 2 {
-			fmt.Printf("%+v\n", state.Claims["10.0.1.0/24"])
-			fmt.Printf("%+v\n", state.Claims["10.0.2.0/24"])
 			t.Errorf("expected claim with complySubs to prepend new tags to subclaims, but didn't")
 		}
 	}

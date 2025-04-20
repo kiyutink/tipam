@@ -19,7 +19,8 @@ func NewStateWithClaims(claims []*Claim) *State {
 	return state
 }
 
-// FindRelated returns all the related Claims as subs, supers
+// FindRelated returns all the related Claims as subs, supers. 
+// This only considers network hierarchy, not tag hierarchy
 func (s *State) FindRelated(cl *Claim) ([]*Claim, []*Claim) {
 	subs, supers := []*Claim{}, []*Claim{}
 	for _, c := range s.Claims {

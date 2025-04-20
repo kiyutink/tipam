@@ -70,31 +70,59 @@ func NewNetworkView(vc *ViewContext, CIDR string, depth int) *NetworkView {
 	}
 }
 
+func (nv *NetworkView) cellText(cidr string) string {
+	tagText := ""
+	// Prefix can be "=" for direct assignment, "~" for inheriting from parent
+	prefix := ""
+	// Suffix can be "f" for final claims or "*" for claims that have subclaims
+	suffix := ""
+	modifier := ""
+
+	if cl, ok := nv.viewContext.State.Claims[cidr]; ok {
+		prefix = "="
+		subs, _ := nv.viewContext.State.FindRelated(cl)
+		if len(subs) > 0 {
+			suffix = "*"
+		}
+		if cl.Final {
+			suffix = "f"
+		}
+		tagText = strings.Join(cl.Tags, "/")
+	} else {
+		// We create a dummy claim so that we can find related existing claims
+		dummyClaim := tipam.MustParseClaimFromCIDR(cidr, nil, false)
+		subs, supers := nv.viewContext.State.FindRelated(dummyClaim)
+
+		modifier = "grey"
+
+		if len(subs) > 0 {
+			suffix = "*"
+		}
+
+		if len(supers) > 0 {
+			prefix = "~"
+			longestSuperclaim := supers[0]
+			for _, p := range supers {
+				if len(p.Tags) > len(longestSuperclaim.Tags) {
+					longestSuperclaim = p
+				}
+			}
+			tagText = strings.Join(longestSuperclaim.Tags, "/")
+			if longestSuperclaim.Final {
+				suffix = "f"
+			}
+		}
+	}
+
+	//<prefix> [<modifier>::]<tagText>[-:-:-] [yellow]<suffix>[-:-:-]
+	return fmt.Sprintf(" %v [%v::]%v[-:-:-] [yellow]%v[-:-:-]", prefix, modifier, tagText, suffix)
+}
+
 func (nv *NetworkView) cell(subnet *net.IPNet, colWidth int) *tview.TableCell {
 	subnetCidr := subnet.String()
 	text := subnetCidr
 	text = helper.PadRight(text, colWidth-len(text))
-	if cl, ok := nv.viewContext.State.Claims[subnetCidr]; ok {
-		text += fmt.Sprintf(" = %v", strings.Join(cl.Tags, "/"))
-	} else {
-		newCl := tipam.NewClaim(subnet, nil, false)
-		subs, supers := nv.viewContext.State.FindRelated(newCl)
-
-		if len(supers) > 0 {
-			longestTagsClaim := supers[0]
-			for _, p := range supers {
-				if len(p.Tags) > len(longestTagsClaim.Tags) {
-					longestTagsClaim = p
-				}
-			}
-
-			text += fmt.Sprintf(" ~ [grey]%v[-]", strings.Join(longestTagsClaim.Tags, "/"))
-		}
-
-		if len(subs) > 0 {
-			text += " [yellow]*[-]"
-		}
-	}
+	text += nv.cellText(subnetCidr)
 
 	cell := tview.NewTableCell(text)
 	cell.SetTextColor(tcell.ColorMediumSlateBlue)

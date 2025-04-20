@@ -13,6 +13,7 @@ type ClaimView struct {
 	cidr          string
 	validationErr string
 	tagsInputVal  string
+	finalInputVal bool
 }
 
 func NewClaimView(vc *ViewContext, cidr string) *ClaimView {
@@ -38,14 +39,16 @@ func (cv *ClaimView) Primitive() tview.Primitive {
 	form.AddInputField("Tags (separated with /)", cv.tagsInputVal, 0, nil, func(text string) {
 		cv.tagsInputVal = text
 	})
+	form.AddCheckbox("Final", false, func(checked bool) {
+		cv.finalInputVal = checked
+	})
 	if cv.validationErr != "" {
 		form.AddTextView("Error", cv.validationErr, 40, 3, false, false)
 	}
+
 	form.AddButton("Claim", func() {
 		tags := strings.Split(cv.tagsInputVal, "/")
-		// TODO: 'final' param is hardcoded, should be passed in the form
-		err := cv.viewContext.Runner.Claim(tipam.MustParseClaimFromCIDR(cv.cidr, tags, false), tipam.ClaimOpts{})
-		// TODO: Is this the best way to do this (refresh local state)? Probably not?
+		err := cv.viewContext.Runner.Claim(tipam.MustParseClaimFromCIDR(cv.cidr, tags, cv.finalInputVal), tipam.ClaimOpts{})
 		cv.viewContext.State, _ = cv.viewContext.Runner.ReadState()
 		if err != nil {
 			cv.validationErr = err.Error()

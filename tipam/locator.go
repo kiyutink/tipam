@@ -75,9 +75,9 @@ func (r *Runner) Locate(within []string, maskLen int) (string, error) {
 	return "", errors.New("no possible network found")
 }
 
-func newDummyClaim(ipNet *net.IPNet, tags []string) *Claim {
-	dummyTags := make([]string, len(tags))
-	copy(dummyTags, tags)
+func newDummyClaim(ipNet *net.IPNet, within []string) *Claim {
+	dummyTags := make([]string, len(within))
+	copy(dummyTags, within)
 	dummyTags = append(dummyTags, "dummy")
 	return NewClaim(ipNet, dummyTags, false)
 }

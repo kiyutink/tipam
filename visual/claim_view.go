@@ -55,8 +55,6 @@ func (cv *ClaimView) Primitive() tview.Primitive {
 			cv.viewContext.DrawModal()
 			return
 		}
-		cl := tipam.MustParseClaimFromCIDR(cv.cidr, tags, false)
-		cv.viewContext.State.Claims[cv.cidr] = cl
 		cv.viewContext.HideModal()
 		cv.viewContext.Draw()
 	})
